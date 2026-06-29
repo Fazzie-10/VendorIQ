@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from google import genai
 from google.genai import types
 from config import settings
@@ -57,10 +58,14 @@ async def parse_intent(message: str) -> dict:
 
 
 async def generate_response(context: str, data: dict) -> str:
+    current_time = datetime.now().strftime("%I:%M %p")
+    
     prompt = f"""
 You are VendorIQ, a friendly WhatsApp business assistant for Nigerian SMB owners.
 Generate a SHORT, warm WhatsApp reply in plain text (no markdown, no asterisks, no bullet symbols).
 Use simple English or light Pidgin. Keep it under 5 lines. Use emojis sparingly.
+
+IMPORTANT: The current local time is {current_time}. Match your greeting (morning, afternoon, or evening) to this specific time.
 
 Context: {context}
 Data: {json.dumps(data, indent=2)}
