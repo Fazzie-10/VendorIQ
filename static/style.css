@@ -1,0 +1,491 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #060F1C;
+    color: #fff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+}
+
+.viq {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #060F1C;
+    color: #fff;
+}
+
+.viq nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.viq-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+}
+
+.viq-logo span {
+    color: #25D366;
+}
+
+.viq-nav-cta {
+    background: #25D366;
+    color: #050E1A;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-family: inherit;
+}
+
+.viq-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 60px 32px 40px;
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.viq-badge {
+    display: inline-block;
+    background: rgba(37,211,102,0.12);
+    color: #25D366;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(37,211,102,0.2);
+}
+
+.viq-h1 {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+
+.viq-h1 span {
+    color: #25D366;
+}
+
+.viq-sub {
+    font-size: 15px;
+    color: #7A8FA8;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    max-width: 380px;
+}
+
+.viq-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #25D366;
+    color: #050E1A;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-family: inherit;
+}
+
+.viq-note {
+    font-size: 12px;
+    color: #4A6070;
+    margin-top: 12px;
+}
+
+.viq-phone {
+    background: #111D2E;
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    max-width: 260px;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.viq-phone-bar {
+    background: #075E54;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.viq-phone-av {
+    width: 34px;
+    height: 34px;
+    background: #25D366;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #050E1A;
+    flex-shrink: 0;
+}
+
+.viq-phone-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.viq-phone-status {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+}
+
+.viq-chat {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #0B1724;
+    min-height: 220px;
+}
+
+.viq-msg {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: 0;
+    animation: fadeUp 0.3s ease forwards;
+}
+
+.viq-msg.u {
+    background: #1F3348;
+    color: #E0EAF4;
+    align-self: flex-end;
+    border-bottom-right-radius: 3px;
+}
+
+.viq-msg.b {
+    background: #054D40;
+    color: #DCF8C6;
+    align-self: flex-start;
+    border-bottom-left-radius: 3px;
+}
+
+.viq-msg.t {
+    font-size: 11px;
+    color: #4A6070;
+    align-self: flex-start;
+    background: none;
+    padding: 2px 4px;
+}
+
+.viq-msg:nth-child(1) { animation-delay: 0.3s; }
+.viq-msg:nth-child(2) { animation-delay: 0.9s; }
+.viq-msg:nth-child(3) { animation-delay: 1.6s; }
+.viq-msg:nth-child(4) { animation-delay: 2.2s; }
+.viq-msg:nth-child(5) { animation-delay: 2.9s; }
+.viq-msg:nth-child(6) { animation-delay: 3.5s; }
+.viq-msg:nth-child(7) { animation-delay: 4.1s; }
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.viq-feats {
+    padding: 40px 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.viq-feats-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #25D366;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.viq-feat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.viq-feat-card {
+    background: #0D1A2A;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 20px 16px;
+}
+
+.viq-feat-icon {
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+.viq-feat-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #fff;
+}
+
+.viq-feat-cmd {
+    font-size: 11px;
+    color: #25D366;
+    background: rgba(37,211,102,0.08);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: monospace;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.viq-feat-desc {
+    font-size: 11px;
+    color: #4A6070;
+    line-height: 1.5;
+}
+
+.viq-steps {
+    padding: 40px 32px;
+    background: #060C18;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.viq-steps-title {
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.viq-step-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.viq-step {
+    text-align: center;
+    padding: 20px 16px;
+}
+
+.viq-step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #25D366;
+    color: #050E1A;
+    font-weight: 800;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+}
+
+.viq-step-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.viq-step-desc {
+    font-size: 12px;
+    color: #4A6070;
+    line-height: 1.6;
+}
+
+.viq-form-wrap {
+    padding: 40px 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.viq-form-inner {
+    background: #0D1A2A;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 36px;
+    max-width: 460px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.viq-form-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.viq-form-sub {
+    font-size: 13px;
+    color: #4A6070;
+    margin-bottom: 24px;
+}
+
+.viq-input {
+    width: 100%;
+    background: #0A1422;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.viq-input::placeholder {
+    color: #2A4060;
+}
+
+.viq-input:focus {
+    border-color: rgba(37,211,102,0.4);
+}
+
+.viq-submit {
+    width: 100%;
+    background: #25D366;
+    color: #050E1A;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.viq-submit:hover {
+    background: #1DB954;
+}
+
+.viq-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.viq-success {
+    display: none;
+    background: rgba(37,211,102,0.1);
+    border: 1px solid rgba(37,211,102,0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+    text-align: center;
+}
+
+.viq-success-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.viq-success-text {
+    font-size: 14px;
+    color: #25D366;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.viq-success-num {
+    font-size: 13px;
+    color: #4A6070;
+}
+
+.viq-success-num strong {
+    color: #25D366;
+}
+
+.viq-footer {
+    padding: 20px 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+    font-size: 12px;
+    color: #2A4060;
+}
+
+@media (max-width: 768px) {
+    .viq-hero {
+        grid-template-columns: 1fr;
+        padding: 40px 20px 30px;
+        text-align: center;
+    }
+
+    .viq-sub {
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .viq-feat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .viq-step-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .viq nav {
+        padding: 14px 20px;
+    }
+
+    .viq-h1 {
+        font-size: 28px;
+    }
+
+    .viq-phone {
+        max-width: 220px;
+    }
+}
+
+@media (max-width: 480px) {
+    .viq-feat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .viq-form-inner {
+        padding: 24px 20px;
+    }
+
+    .viq-feats {
+        padding: 30px 20px;
+    }
+
+    .viq-steps {
+        padding: 30px 20px;
+    }
+
+    .viq-form-wrap {
+        padding: 30px 20px;
+    }
+}

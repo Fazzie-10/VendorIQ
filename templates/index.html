@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VendorIQ — Your business brain on WhatsApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --page-bg: #060F1C;
+  --bg: #0D1A2A;
+  --bg2: #0B1724;
+  --bg3: #111D2E;
+  --bg4: #060C18;
+  --surface: #0A1422;
+  --text: #fff;
+  --text2: #E0EAF4;
+  --text3: #7A8FA8;
+  --text4: #4A6070;
+  --text5: #2A4060;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --shadow: rgba(0,0,0,0.4);
+  --green: #25D366;
+  --green-bg: rgba(37,211,102,0.12);
+  --green-border: rgba(37,211,102,0.2);
+  --green-dark: #050E1A;
+  --green-hover: #1DB954;
+  --chat-bot-bg: #054D40;
+  --chat-bot-text: #DCF8C6;
+  --badge-bg: rgba(37,211,102,0.08);
+  --phone-bar: #075E54;
+  --phone-name: #fff;
+  --phone-status: rgba(255,255,255,0.6);
+}
+
+body.light {
+  --page-bg: #F8FAFC;
+  --bg: #FFFFFF;
+  --bg2: #F1F5F9;
+  --bg3: #FFFFFF;
+  --bg4: #F8FAFC;
+  --surface: #FFFFFF;
+  --text: #0F172A;
+  --text2: #1E293B;
+  --text3: #475569;
+  --text4: #64748B;
+  --text5: #94A3B8;
+  --border: rgba(0,0,0,0.06);
+  --border2: rgba(0,0,0,0.1);
+  --shadow: rgba(0,0,0,0.08);
+  --green-dark: #064E3B;
+  --chat-bot-bg: #DCFCE7;
+  --chat-bot-text: #166534;
+  --badge-bg: rgba(37,211,102,0.1);
+  --phone-bar: #DCFCE7;
+  --phone-name: #075E54;
+  --phone-status: rgba(7,94,84,0.5);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page-bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);transition:background .4s;min-height:100vh}
+a{text-decoration:none}
+
+.viq{max-width:1200px;margin:0 auto}
+.viq nav{display:flex;align-items:center;justify-content:space-between;padding:20px 40px;border-bottom:1px solid var(--border)}
+.viq-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;color:var(--text)}
+.viq-logo span{color:var(--green)}
+.viq-nav-actions{display:flex;align-items:center;gap:12px}
+.viq-theme-btn{background:var(--bg);border:1px solid var(--border);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;padding:0}
+.viq-theme-btn svg{width:18px;height:18px;fill:var(--text3)}
+.viq-theme-btn:hover{background:var(--green-bg);border-color:var(--green)}
+.viq-theme-btn:hover svg{fill:var(--green)}
+.viq-nav-cta{background:var(--green);color:var(--green-dark);font-weight:700;font-size:14px;padding:10px 24px;border-radius:24px;font-family:inherit;transition:all .2s}
+.viq-nav-cta:hover{background:var(--green-hover);transform:translateY(-1px)}
+
+.viq-hero{display:grid;grid-template-columns:1fr 1fr;gap:60px;padding:80px 40px 60px;align-items:center}
+.viq-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green-bg);color:var(--green);font-size:13px;font-weight:600;padding:8px 16px;border-radius:24px;margin-bottom:24px;border:1px solid var(--green-border)}
+.viq-h1{font-size:52px;font-weight:800;line-height:1.1;margin-bottom:20px;letter-spacing:-1px;color:var(--text)}
+.viq-h1 span{color:var(--green)}
+.viq-sub{font-size:17px;color:var(--text3);line-height:1.8;margin-bottom:32px;max-width:440px}
+.viq-cta{display:inline-flex;align-items:center;gap:10px;background:var(--green);color:var(--green-dark);font-weight:700;font-size:16px;padding:16px 32px;border-radius:32px;font-family:inherit;transition:all .2s}
+.viq-cta:hover{background:var(--green-hover);transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,0.3)}
+.viq-note{font-size:13px;color:var(--text4);margin-top:16px}
+.viq-phone{background:var(--bg3);border-radius:32px;overflow:hidden;border:1px solid var(--border);max-width:280px;margin:0 auto;box-shadow:0 24px 80px var(--shadow);transition:background .4s,border .4s}
+.viq-phone-bar{background:var(--phone-bar);padding:14px 18px;display:flex;align-items:center;gap:12px;transition:background .4s}
+.viq-phone-av{width:38px;height:38px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--green-dark);flex-shrink:0}
+.viq-phone-name{font-size:15px;font-weight:600;color:var(--phone-name);transition:color .4s}
+.viq-phone-status{font-size:11px;color:var(--phone-status);transition:color .4s}
+.viq-chat{padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--bg2);min-height:240px;transition:background .4s}
+.viq-msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;opacity:0;animation:fadeUp .35s ease forwards}
+.viq-msg.u{background:var(--bg);color:var(--text2);align-self:flex-end;border-bottom-right-radius:4px;transition:background .4s,color .4s}
+.viq-msg.b{background:var(--chat-bot-bg);color:var(--chat-bot-text);align-self:flex-start;border-bottom-left-radius:4px;transition:background .4s,color .4s}
+.viq-msg.t{font-size:11px;color:var(--text4);align-self:center;background:none;padding:2px 6px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.viq-msg:nth-child(1){animation-delay:.3s}
+.viq-msg:nth-child(2){animation-delay:.8s}
+.viq-msg:nth-child(3){animation-delay:1.4s}
+.viq-msg:nth-child(4){animation-delay:2s}
+.viq-msg:nth-child(5){animation-delay:2.6s}
+.viq-msg:nth-child(6){animation-delay:3.2s}
+.viq-msg:nth-child(7){animation-delay:3.8s}
+
+.viq-feats{padding:60px 40px;border-top:1px solid var(--border)}
+.viq-feats-title{font-size:12px;font-weight:700;color:var(--green);letter-spacing:3px;text-transform:uppercase;text-align:center;margin-bottom:36px}
+.viq-feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.viq-feat-card{background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:28px 24px;transition:all .25s}
+.viq-feat-card:hover{transform:translateY(-3px);border-color:var(--green);box-shadow:0 8px 30px var(--shadow)}
+.viq-feat-icon{font-size:28px;margin-bottom:14px}
+.viq-feat-title{font-size:16px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.viq-feat-cmd{font-size:12px;color:var(--green);background:var(--badge-bg);padding:5px 10px;border-radius:8px;font-family:monospace;margin-bottom:10px;display:inline-block}
+.viq-feat-desc{font-size:13px;color:var(--text3);line-height:1.6}
+
+.viq-steps{padding:60px 40px;background:var(--bg4);border-top:1px solid var(--border);transition:background .4s}
+.viq-steps-title{font-size:28px;font-weight:800;text-align:center;margin-bottom:40px;color:var(--text)}
+.viq-step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;max-width:800px;margin:0 auto}
+.viq-step{text-align:center;padding:24px 20px}
+.viq-step-num{width:44px;height:44px;border-radius:50%;background:var(--green);color:var(--green-dark);font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.viq-step-title{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.viq-step-desc{font-size:14px;color:var(--text3);line-height:1.7}
+
+.viq-form-wrap{padding:60px 40px;border-top:1px solid var(--border)}
+.viq-form-inner{background:var(--bg);border:1px solid var(--border);border-radius:24px;padding:48px 40px;max-width:520px;margin:0 auto;text-align:center;transition:background .4s}
+.viq-form-title{font-size:28px;font-weight:800;margin-bottom:8px;color:var(--text)}
+.viq-form-sub{font-size:15px;color:var(--text3);margin-bottom:28px}
+.viq-input{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px 18px;color:var(--text);font-size:15px;font-family:inherit;margin-bottom:14px;outline:none;transition:border-color .2s,background .4s}
+.viq-input::placeholder{color:var(--text5)}
+.viq-input:focus{border-color:var(--green)}
+.viq-submit{width:100%;background:var(--green);color:var(--green-dark);font-weight:700;font-size:16px;padding:16px;border-radius:12px;border:none;font-family:inherit;cursor:pointer;margin-top:4px;transition:all .2s}
+.viq-submit:hover{background:var(--green-hover);transform:translateY(-1px)}
+.viq-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.viq-success{display:none;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3);border-radius:16px;padding:24px;margin-top:20px;text-align:center}
+.viq-success-icon{font-size:36px;margin-bottom:10px}
+.viq-success-text{font-size:16px;color:var(--green);font-weight:700;margin-bottom:6px}
+.viq-success-num{font-size:14px;color:var(--text3)}
+.viq-success-num strong{color:var(--green)}
+
+.viq-footer{padding:28px 40px;border-top:1px solid var(--border);text-align:center;font-size:13px;color:var(--text5)}
+
+@media(max-width:900px){
+  .viq-hero{grid-template-columns:1fr;padding:48px 24px 40px;gap:40px;text-align:center}
+  .viq-sub{margin:0 auto 32px}
+  .viq-h1{font-size:38px}
+  .viq-h1 br{display:none}
+  .viq-feat-grid{grid-template-columns:repeat(2,1fr)}
+  .viq-step-grid{grid-template-columns:1fr;gap:0;max-width:400px}
+  .viq nav{padding:16px 24px}
+  .viq-feats{padding:40px 24px}
+  .viq-steps{padding:40px 24px}
+  .viq-form-wrap{padding:40px 24px}
+  .viq-footer{padding:20px 24px}
+}
+@media(max-width:540px){
+  .viq-h1{font-size:30px}
+  .viq-hero{padding:32px 16px 24px;gap:32px}
+  .viq nav{padding:14px 16px}
+  .viq-feat-grid{grid-template-columns:1fr}
+  .viq-feats{padding:32px 16px}
+  .viq-steps{padding:32px 16px}
+  .viq-form-wrap{padding:32px 16px}
+  .viq-form-inner{padding:32px 20px}
+  .viq-logo{font-size:18px}
+  .viq-nav-cta{padding:8px 18px;font-size:13px}
+  .viq-phone{max-width:240px}
+}
+</style>
+</head>
+<body id="viq-body">
+
+<div class="viq">
+
+<nav>
+  <div class="viq-logo">⚡ Vendor<span>IQ</span></div>
+  <div class="viq-nav-actions">
+    <button class="viq-theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg id="sun-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 16a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM4.93 4.93a1 1 0 0 1 1.41 0l1.42 1.42a1 1 0 0 1-1.42 1.41L4.93 6.34a1 1 0 0 1 0-1.41zm11.31 11.31a1 1 0 0 1 1.41 0l1.42 1.42a1 1 0 0 1-1.42 1.41l-1.41-1.41a1 1 0 0 1 0-1.42zM2 12a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2H3a1 1 0 0 1-1-1zm16 0a1 1 0 0 1 1-1h2a1 1 0 0 1 0 2h-2a1 1 0 0 1-1-1zM6.34 17.66a1 1 0 0 1 0 1.41L4.93 20.5a1 1 0 0 1-1.41-1.42l1.41-1.41a1 1 0 0 1 1.41 0zm12.73-12.73a1 1 0 0 1 0 1.41l-1.42 1.42a1 1 0 0 1-1.41-1.42l1.41-1.41a1 1 0 0 1 1.42 0zM12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
+      <svg id="moon-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+    </button>
+    <a href="#signup" class="viq-nav-cta">Get Started</a>
+  </div>
+</nav>
+
+<section class="viq-hero">
+  <div>
+    <div class="viq-badge">🇳🇬 Built for Nigerian business owners</div>
+    <h1 class="viq-h1">Your business brain,<br>on <span>WhatsApp</span></h1>
+    <p class="viq-sub">Log sales, track debts, and get daily revenue reports — just by texting. No app to download. No dashboard to learn.</p>
+    <a href="#signup" class="viq-cta">Start Free Beta →</a>
+    <p class="viq-note">No credit card · Works on any phone</p>
+  </div>
+  <div>
+    <div class="viq-phone">
+      <div class="viq-phone-bar">
+        <div class="viq-phone-av">V</div>
+        <div>
+          <div class="viq-phone-name">VendorIQ</div>
+          <div class="viq-phone-status">online</div>
+        </div>
+      </div>
+      <div class="viq-chat">
+        <div class="viq-msg t">Today, 8:14 AM</div>
+        <div class="viq-msg u">Sold 5 bags rice at 52k</div>
+        <div class="viq-msg b">✅ Logged! Today: ₦260,000. 🔥</div>
+        <div class="viq-msg u">How much this week?</div>
+        <div class="viq-msg b">📊 ₦847k this week — up 19% from last week!</div>
+        <div class="viq-msg u">Emeka owes me 45k</div>
+        <div class="viq-msg b">✅ Emeka owes ₦45,000. Want me to remind him?</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="viq-feats">
+  <div class="viq-feats-title">What you can do</div>
+  <div class="viq-feat-grid">
+    <div class="viq-feat-card">
+      <div class="viq-feat-icon">📦</div>
+      <div class="viq-feat-title">Log Sales</div>
+      <div class="viq-feat-cmd">"Sold 3 bags at 52k"</div>
+      <div class="viq-feat-desc">Just text what you sold. VendorIQ records it instantly.</div>
+    </div>
+    <div class="viq-feat-card">
+      <div class="viq-feat-icon">💰</div>
+      <div class="viq-feat-title">Track Revenue</div>
+      <div class="viq-feat-cmd">"How much today?"</div>
+      <div class="viq-feat-desc">Ask for daily, weekly, or monthly totals anytime.</div>
+    </div>
+    <div class="viq-feat-card">
+      <div class="viq-feat-icon">👤</div>
+      <div class="viq-feat-title">Manage Debts</div>
+      <div class="viq-feat-cmd">"Emeka owes 45k"</div>
+      <div class="viq-feat-desc">Track who owes you and record when they pay.</div>
+    </div>
+    <div class="viq-feat-card">
+      <div class="viq-feat-icon">📊</div>
+      <div class="viq-feat-title">Daily Reports</div>
+      <div class="viq-feat-cmd">"Summary"</div>
+      <div class="viq-feat-desc">Get a full business report every evening at 8pm.</div>
+    </div>
+  </div>
+</section>
+
+<section class="viq-steps">
+  <h2 class="viq-steps-title">Up in 60 seconds</h2>
+  <div class="viq-step-grid">
+    <div class="viq-step">
+      <div class="viq-step-num">1</div>
+      <div class="viq-step-title">Sign up below</div>
+      <div class="viq-step-desc">Enter your name, WhatsApp number, and business name.</div>
+    </div>
+    <div class="viq-step">
+      <div class="viq-step-num">2</div>
+      <div class="viq-step-title">Send START</div>
+      <div class="viq-step-desc">Text START to our number to activate your account.</div>
+    </div>
+    <div class="viq-step">
+      <div class="viq-step-num">3</div>
+      <div class="viq-step-title">Start texting</div>
+      <div class="viq-step-desc">Log sales, check revenue, track debts — all on WhatsApp.</div>
+    </div>
+  </div>
+</section>
+
+<section class="viq-form-wrap" id="signup">
+  <div class="viq-form-inner">
+    <div class="viq-form-title">Join the Free Beta</div>
+    <div class="viq-form-sub">Works on any phone. No app install needed.</div>
+    <div id="viq-form">
+      <input class="viq-input" id="f-name" placeholder="Your name e.g. Chisom Okafor" />
+      <input class="viq-input" id="f-phone" placeholder="WhatsApp number e.g. 08012345678" />
+      <input class="viq-input" id="f-biz" placeholder="Business name e.g. Chisom's Provisions" />
+      <button class="viq-submit" id="submit-btn">Create Account</button>
+    </div>
+    <div class="viq-success" id="viq-success">
+      <div class="viq-success-icon">🎉</div>
+      <div class="viq-success-text">Account created!</div>
+      <div class="viq-success-num" id="success-msg">Send <strong>START</strong> to <strong>{{ vendoriq_phone }}</strong> on WhatsApp to activate</div>
+    </div>
+  </div>
+</section>
+
+<div class="viq-footer">VendorIQ © 2026</div>
+
+</div>
+
+<script>
+(function(){
+  var b=document.getElementById('viq-body');
+  if(localStorage.getItem('viq-theme')==='light'){
+    b.classList.add('light');
+    document.getElementById('moon-icon').style.display='';
+    document.getElementById('sun-icon').style.display='none';
+  }
+})();
+function toggleTheme(){
+  var b=document.getElementById('viq-body');
+  b.classList.toggle('light');
+  var isLight=b.classList.contains('light');
+  document.getElementById('sun-icon').style.display=isLight?'none':'';
+  document.getElementById('moon-icon').style.display=isLight?'':'none';
+  localStorage.setItem('viq-theme',isLight?'light':'dark');
+}
+document.getElementById("submit-btn").addEventListener("click", async function() {
+  var n=document.getElementById('f-name').value.trim();
+  var p=document.getElementById('f-phone').value.trim();
+  var b=document.getElementById('f-biz').value.trim();
+  if(!n||!p||!b){alert('Please fill in all fields');return;}
+  var btn=this;btn.disabled=true;btn.textContent='Creating...';
+  try {
+    var r=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:p,business_name:b})});
+    if(r.ok){document.getElementById('viq-form').style.display='none';document.getElementById('viq-success').style.display='block'}
+    else{var d=await r.json();alert(d.detail||'Error');btn.disabled=false;btn.textContent='Create Account'}
+  }catch(e){alert('Network error');btn.disabled=false;btn.textContent='Create Account'}
+});
+</script>
+
+</body>
+</html>
