@@ -7,7 +7,7 @@ from config import settings
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 # Strip any accidental spaces from the Railway variable list
-MODELS = [m.strip() for m in settings.GEMINI_MODELS]
+MODELS = [m.strip() for m in settings.GEMINI_MODELS.split(",")]
 
 INTENT_SYSTEM_PROMPT = """
 You are an intent classifier for a WhatsApp business bot used by Nigerian SMB owners.

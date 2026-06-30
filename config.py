@@ -8,8 +8,7 @@ class Settings(BaseSettings):
     EVOLUTION_API_KEY: str
     EVOLUTION_INSTANCE: str = "vendoriq"
     GEMINI_API_KEY: str
-    GEMINI_MODELS: List[str] = ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-3.5-pro"]
-    SUPABASE_URL: str
+    GEMINI_MODELS: str = "gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3.5-pro"
     SUPABASE_ANON_KEY: str
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = int(os.getenv("PORT", 8000))
