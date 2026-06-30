@@ -5,9 +5,9 @@ from google.genai import types
 from config import settings
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
-MODEL = settings.GEMINI_MODEL
-print(f"DEBUG model name: '{MODEL}'")  # add this line
 
+# Strip any accidental spaces from the Railway variable list
+MODELS = [m.strip() for m in settings.GEMINI_MODELS]
 
 INTENT_SYSTEM_PROMPT = """
 You are an intent classifier for a WhatsApp business bot used by Nigerian SMB owners.
@@ -42,20 +42,27 @@ For amounts: convert "52k" to 52000, "1.5m" to 1500000, "N45,000" to 45000.
 For period: "today", "this week", "this month", "yesterday", or null.
 """
 
-
 async def parse_intent(message: str) -> dict:
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=message,
-        config=types.GenerateContentConfig(
-            system_instruction=INTENT_SYSTEM_PROMPT,
-            response_mime_type="application/json",
-            temperature=0.1
-        )
-    )
-    raw = response.text.strip()
-    return json.loads(raw)
-
+    last_error = None
+    for model in MODELS:
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=message,
+                config=types.GenerateContentConfig(
+                    system_instruction=INTENT_SYSTEM_PROMPT,
+                    response_mime_type="application/json",
+                    temperature=0.1
+                )
+            )
+            raw = response.text.strip()
+            return json.loads(raw)
+        except Exception as e:
+            print(f"WARNING: Model {model} failed in parse_intent. Trying next... Error: {str(e)}")
+            last_error = e
+            
+    print(f"CRITICAL: All models failed in parse_intent. Last error: {str(last_error)}")
+    raise last_error
 
 async def generate_response(context: str, data: dict) -> str:
     current_time = datetime.now().strftime("%I:%M %p")
@@ -77,9 +84,18 @@ Rules:
 - If showing revenue up/down, note the percentage change
 - End with a brief motivating line only if appropriate
 """
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config=types.GenerateContentConfig(temperature=0.7)
-    )
-    return response.text.strip()
+    last_error = None
+    for model in MODELS:
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.7)
+            )
+            return response.text.strip()
+        except Exception as e:
+            print(f"WARNING: Model {model} failed in generate_response. Trying next... Error: {str(e)}")
+            last_error = e
+            
+    print(f"CRITICAL: All models failed in generate_response. Last error: {str(last_error)}")
+    raise last_error
