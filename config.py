@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     VENDORIQ_PHONE: str
     DAILY_SUMMARY_HOUR: int = 20
     DAILY_SUMMARY_MINUTE: int = 0
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
 
     class Config:
         env_file = ".env"
