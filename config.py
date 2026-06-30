@@ -1,5 +1,6 @@
 import os
 from pydantic_settings import BaseSettings
+from typing import List
 
 
 class Settings(BaseSettings):
@@ -7,7 +8,7 @@ class Settings(BaseSettings):
     EVOLUTION_API_KEY: str
     EVOLUTION_INSTANCE: str = "vendoriq"
     GEMINI_API_KEY: str
-    GEMINI_MODELS: str = "gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3.5-pro"
+    GEMINI_MODELS: List[str] = ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-3.5-pro"]
     SUPABASE_URL: str
     SUPABASE_ANON_KEY: str
     APP_HOST: str = "0.0.0.0"
