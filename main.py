@@ -15,7 +15,7 @@ import uvicorn
 from config import settings
 from models.schemas import GreenAPIWebhookPayload
 from handlers.router import route_message
-from services.whatsapp import download_media, get_temp_file
+from services.whatsapp import download_media, get_temp_file, send_message
 from services.gemini import transcribe_audio
 from scheduler import start_scheduler
 
@@ -86,30 +86,30 @@ async def webhook(request: Request):
             logger.info(f"Ignored type: {payload.typeWebhook}")
             return {"status": "ignored"}
 
-        if not payload.messageData:
-            logger.info("Ignored message with no messageData")
+        if not payload.is_incoming_message:
+            logger.info(f"Ignored type: {payload.typeWebhook}")
+            return {"status": "ignored"}
+        if payload.is_group:
+            logger.info(f"Ignored group message")
             return {"status": "ignored"}
 
-        logger.info(f"Webhook from {payload.sender_phone}: has_text={bool(payload.message_text)}, is_voice={payload.is_voice_message}")
-
-        if payload.is_voice_message:
-            logger.info(f"Processing voice from {payload.sender_phone}")
+        if payload.is_audio and payload.audio_message_id:
             try:
-                if not payload.idMessage:
-                    logger.error("No idMessage for voice download")
-                    return {"status": "error"}
-                audio_bytes, mime_type = await download_media(payload.idMessage)
-                logger.info(f"Downloaded audio: {len(audio_bytes)} bytes, type={mime_type}")
-                transcript = await transcribe_audio(audio_bytes, mime_type)
-                logger.info(f"Voice transcript: {transcript}")
-                await route_message(
-                    phone=payload.sender_phone,
-                    text=transcript,
-                    push_name=payload.push_name
+                audio_bytes, mime_type = await download_media(payload.audio_message_id)
+                transcribed = await transcribe_audio(audio_bytes, mime_type)
+                if transcribed:
+                    await route_message(
+                        phone=payload.sender_phone,
+                        text=transcribed,
+                        push_name=payload.push_name
+                    )
+            except Exception as audio_err:
+                logger.error(f"Voice note error: {audio_err}")
+                await send_message(
+                    payload.sender_phone,
+                    "Sorry, I couldn't process that voice note. Please type your message instead."
                 )
-            except Exception as e:
-                logger.error(f"Voice error: {e}", exc_info=True)
-            return {"status": "voice_transcribed"}
+            return {"status": "ok"}
 
         if not payload.message_text:
             logger.info("Ignored empty non-voice message")

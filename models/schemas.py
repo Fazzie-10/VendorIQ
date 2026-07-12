@@ -35,10 +35,24 @@ class GreenAPIWebhookPayload(BaseModel):
         return self.messageData.get("typeMessage", "") in ("voiceMessage", "audioMessage")
 
     @property
+    def is_audio(self) -> bool:
+        if not self.messageData:
+            return False
+        return self.messageData.get("typeMessage", "") == "audioMessage"
+
+    @property
+    def audio_message_id(self) -> str:
+        return self.idMessage or ""
+
+    @property
     def push_name(self) -> str:
         if not self.senderData:
             return ""
         return self.senderData.get("senderName", "") or self.senderData.get("chatName", "")
+
+    @property
+    def is_incoming_message(self) -> bool:
+        return self.typeWebhook == "incomingMessageReceived"
 
     @property
     def is_from_me(self) -> bool:

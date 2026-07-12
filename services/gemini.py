@@ -138,12 +138,20 @@ CONTEXT-SPECIFIC RULES:
 - all_debts_query: List each debtor with their balance. State total outstanding at the end.
 - daily_summary: State today's sales total, expenses, profit, then list debtors with amounts, then low stock if any. All from the data — no improvisation.
 - smart_query: Answer only what the data shows. If result is 0 or empty, say so plainly.
-- greeting: Be warm and brief. Ask how business is going.
-- help: List the commands VendorIQ supports. Be clear and structured.
+- greeting: Be genuinely warm and casual. Sound like a friend who knows their business.
+  Use their name naturally. Light Pidgin is great here ("how body", "e don do", "well done").
+  Do NOT give a business report unless they asked. Just chat naturally. 1-3 lines max.
+  Examples of good greeting replies:
+  "Hey Joshua! How the market dey today? Hope sales dey enter 😄"
+  "Good afternoon Femi! How body? Business dey move?"
+  "Ehen Joshua, welcome back! How far today?"
+- help: This is handled by hardcoded text in onboarding.py. If you somehow receive this context, just say "Send 'help' to see what I can do."
 
 Context: {context}
 Data: {json.dumps(data, indent=2)}
 """
+
+    temp = 0.7 if context in ("greeting", "unknown") else 0.3
 
     last_error = None
     for model in MODELS:
@@ -151,7 +159,7 @@ Data: {json.dumps(data, indent=2)}
             response = client.models.generate_content(
                 model=model,
                 contents=base_prompt,
-                config=types.GenerateContentConfig(temperature=0.3)
+                config=types.GenerateContentConfig(temperature=temp)
             )
             return response.text.strip()
         except Exception as e:
