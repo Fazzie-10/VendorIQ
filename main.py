@@ -32,6 +32,12 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.info(f"Receipts bucket check: {e}")
 
+    try:
+        supabase.table("transactions").update({"deleted": False}).is_("deleted", "null").execute()
+        logger.info("Migrated NULL deleted values to false")
+    except Exception as e:
+        logger.info(f"Deleted column migration: {e}")
+
     start_scheduler()
     logger.info(f"Scheduler started (daily summary at {settings.DAILY_SUMMARY_HOUR}:{settings.DAILY_SUMMARY_MINUTE:02d})")
     yield

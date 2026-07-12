@@ -63,6 +63,7 @@ async def handle_smart_query(phone: str, user: dict, entities: dict) -> None:
     aggregation = action.get("aggregation", "total")
     item_filter = action.get("item_filter")
     customer_filter = action.get("customer_filter")
+    show_deleted = action.get("deleted", False)
 
     try:
         if table == "customers":
@@ -81,6 +82,10 @@ async def handle_smart_query(phone: str, user: dict, entities: dict) -> None:
 
         else:
             query = supabase.table("transactions").select("*").eq("user_id", user_id)
+            if show_deleted:
+                query = query.eq("deleted", True)
+            else:
+                query = query.eq("deleted", False)
             if type_filter and type_filter != "all":
                 query = query.eq("type", type_filter)
             if start_date:
@@ -95,6 +100,10 @@ async def handle_smart_query(phone: str, user: dict, entities: dict) -> None:
                 comp_end = action.get("comparison_end")
                 current_data = query.execute().data
                 comp_query = supabase.table("transactions").select("*").eq("user_id", user_id)
+                if show_deleted:
+                    comp_query = comp_query.eq("deleted", True)
+                else:
+                    comp_query = comp_query.eq("deleted", False)
                 if type_filter and type_filter != "all":
                     comp_query = comp_query.eq("type", type_filter)
                 if comp_start:

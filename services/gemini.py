@@ -215,6 +215,8 @@ AVAILABLE DATA:
    - quantity: number or null
    - note: string or null
    - created_at: ISO timestamp
+   - deleted: boolean (true if user archived/deleted it)
+   - deleted_at: ISO timestamp or null
 
 2. customers table — debtors
    - name: string
@@ -250,6 +252,7 @@ Return ONLY valid JSON, no markdown, no explanation:
   "aggregation": "total",
   "item_filter": null,
   "customer_filter": null,
+  "deleted": false,
   "explanation": "User asked about last month's sales"
 }}
 
@@ -268,6 +271,11 @@ For customer/debt questions:
 For inventory questions:
 - "what's in stock" → table: "inventory", aggregation: "list"
 - "what's low on stock" → table: "inventory", aggregation: "list" (quantity < 5)
+
+DELETED RECORDS:
+- For regular questions about revenue, sales, expenses etc: exclude deleted records (they are already filtered out by default).
+- If the user explicitly asks about deleted/archived records ("deleted sales", "what did I delete", "archived records"): include `deleted: true` in your query action.
+- Deleted records should never appear in normal revenue or summary queries.
 
 For comparison questions like "compare this month to last month":
 - aggregation: "comparison"

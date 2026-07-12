@@ -9,7 +9,7 @@ async def handle_receipt_request(phone: str, user: dict, entities: dict) -> None
     lang = entities.get("_language", "english")
     user_id = user["id"]
 
-    result = supabase.table("transactions").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+    result = supabase.table("transactions").select("*").eq("user_id", user_id).eq("deleted", False).order("created_at", desc=True).limit(1).execute()
 
     if not result.data:
         await send_message(phone, "I don't have any transactions yet to generate a receipt for.")

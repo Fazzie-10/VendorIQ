@@ -13,8 +13,8 @@ async def send_daily_summary(phone: str, user: dict, language: str = "english") 
     supabase = get_supabase()
     today_start = today_nigeria_start()
 
-    sales = supabase.table("transactions").select("amount,item,quantity,note,created_at").eq("user_id", user["id"]).eq("type", "sale").gte("created_at", today_start).order("created_at", desc=True).execute()
-    expenses = supabase.table("transactions").select("amount,item,quantity,note,created_at").eq("user_id", user["id"]).eq("type", "expense").gte("created_at", today_start).order("created_at", desc=True).execute()
+    sales = supabase.table("transactions").select("amount,item,quantity,note,created_at").eq("user_id", user["id"]).eq("type", "sale").eq("deleted", False).gte("created_at", today_start).order("created_at", desc=True).execute()
+    expenses = supabase.table("transactions").select("amount,item,quantity,note,created_at").eq("user_id", user["id"]).eq("type", "expense").eq("deleted", False).gte("created_at", today_start).order("created_at", desc=True).execute()
     debtors = supabase.table("customers").select("name,balance,updated_at").eq("user_id", user["id"]).gt("balance", 0).order("balance", desc=True).limit(5).execute()
     low_stock = supabase.table("inventory").select("item,quantity,unit").eq("user_id", user["id"]).lt("quantity", 5).execute()
 

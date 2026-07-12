@@ -41,7 +41,7 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
         return
 
     if customer_name and amount:
-        result = supabase.table("transactions").select("*").eq("user_id", user_id).ilike("item", customer_name).eq("amount", amount).order("created_at", desc=True).limit(1).execute()
+        result = supabase.table("transactions").select("*").eq("user_id", user_id).ilike("item", customer_name).eq("amount", amount).eq("deleted", False).order("created_at", desc=True).limit(1).execute()
         if result.data:
             txn = result.data[0]
             _soft_delete(supabase, txn["id"])
@@ -56,9 +56,9 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
 
     if period == "last":
         if target_type:
-            result = supabase.table("transactions").select("*").eq("user_id", user_id).eq("type", target_type).order("created_at", desc=True).limit(1).execute()
+            result = supabase.table("transactions").select("*").eq("user_id", user_id).eq("type", target_type).eq("deleted", False).order("created_at", desc=True).limit(1).execute()
         else:
-            result = supabase.table("transactions").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+            result = supabase.table("transactions").select("*").eq("user_id", user_id).eq("deleted", False).order("created_at", desc=True).limit(1).execute()
 
         if result.data:
             txn = result.data[0]

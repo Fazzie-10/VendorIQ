@@ -30,7 +30,7 @@ async def handle_log_sale(phone: str, user: dict, entities: dict) -> None:
     }).execute()
 
     today_start = today_nigeria_start()
-    result = supabase.table("transactions").select("amount").eq("user_id", user["id"]).eq("type", "sale").gte("created_at", today_start).execute()
+    result = supabase.table("transactions").select("amount").eq("user_id", user["id"]).eq("type", "sale").eq("deleted", False).gte("created_at", today_start).execute()
     today_total = sum(r["amount"] for r in result.data)
 
     reply = await generate_response("sale_logged", {
