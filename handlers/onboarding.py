@@ -40,10 +40,21 @@ async def handle_greeting(phone: str, user: dict, entities: dict) -> None:
 
 
 async def handle_help(phone: str, user: dict, entities: dict) -> None:
-    lang = entities.get("_language", "english")
-    reply = await generate_response("help", {
-        "user_name": user["name"],
-    }, language=lang)
+    # Hardcoded — never ask Gemini to list features, it invents things
+    reply = f"""VendorIQ commands for {user['name']}:
+
+Log sales: "Sold 3 bags rice at 52k"
+Log expense: "Bought goods for 30k"
+Check revenue: "How much today?" or "This week?"
+Track debt: "Emeka owes 45k"
+Record payment: "Emeka paid 20k"
+Who owes me: "Who owes me?" or "Emeka balance"
+Stock update: "Received 50 bags of rice"
+Get summary: "Summary"
+Delete record: "Delete my last sale"
+Get receipt: "Send me a receipt"
+
+Ask anything about your business in plain English."""
     await send_message(phone, reply)
 
 

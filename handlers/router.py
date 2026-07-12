@@ -21,6 +21,11 @@ async def route_message(phone: str, text: str, push_name: str = "") -> None:
             await send_message(phone, f"Hi {user['name']}! Send START to activate your VendorIQ account 🚀")
         return
 
+    # Active user sending START again — re-show welcome/help
+    if text.strip().upper() == "START":
+        await onboarding.handle_help(phone, user, {})
+        return
+
     parsed = await parse_intent(text)
     intent = parsed.get("intent", "unknown")
     entities = parsed.get("entities", {})
@@ -37,7 +42,7 @@ async def route_message(phone: str, text: str, push_name: str = "") -> None:
         "query_revenue": query.handle_smart_query,
         "query_debt": customer.handle_debt_query,
         "update_inventory": inventory.handle_update,
-        "get_summary": query.handle_smart_query,
+        "get_summary": summary.handle_summary,  # Fixed: was query.handle_smart_query
         "delete_record": delete.handle_delete,
         "request_receipt": receipt.handle_receipt_request,
         "greeting": onboarding.handle_greeting,
