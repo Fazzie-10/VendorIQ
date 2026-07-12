@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from services.tz import now_nigeria
 from services.db import get_supabase
 from services.whatsapp import send_message
 from services.gemini import generate_response
@@ -11,7 +11,7 @@ async def handle_summary(phone: str, user: dict, entities: dict) -> None:
 
 async def send_daily_summary(phone: str, user: dict, language: str = "english") -> None:
     supabase = get_supabase()
-    today = datetime.now(UTC).date().isoformat()
+    today = now_nigeria().date().isoformat()
 
     sales = supabase.table("transactions").select("amount,item,quantity,note,created_at").eq("user_id", user["id"]).eq("type", "sale").gte("created_at", today).order("created_at", desc=True).execute()
     expenses = supabase.table("transactions").select("amount,item,quantity,note,created_at").eq("user_id", user["id"]).eq("type", "expense").gte("created_at", today).order("created_at", desc=True).execute()

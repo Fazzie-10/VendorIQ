@@ -1,8 +1,8 @@
 import json
-from datetime import datetime
 from google import genai
 from google.genai import types
 from config import settings
+from services.tz import now_nigeria
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
@@ -26,6 +26,7 @@ Classify the user's message into one of these intents:
 - update_inventory: Stock update (e.g. "received 50 bags", "stock: 20 cartons indomie")
 - get_summary: Want full report (e.g. "summary", "report", "show me everything")
 - delete_record: Want to remove something (e.g. "delete my last sale", "remove the 45k debt for Emeka", "cancel that", "delete Emeka's debt")
+- request_receipt: Asking for a receipt or proof of payment (e.g. "send me a receipt", "receipt for last sale", "print receipt for Emeka", "give me a receipt")
 - greeting: Casual chat, checking in, gratitude (e.g. "good morning", "how far", "hello", "I'm fine", "thank you", "anything you want to tell me", "how you dey", "you there?")
 - help: Asking about capabilities (e.g. "what can you do", "what do you do", "help", "how does this work", "what do you support", "show me what you can do", "features")
 - unknown: Cannot classify
@@ -104,7 +105,7 @@ async def parse_intent(message: str) -> dict:
 
 
 async def generate_response(context: str, data: dict, language: str = "english") -> str:
-    now = datetime.now()
+    now = now_nigeria()
     today_date = now.strftime("%A, %B %d, %Y")
     current_time = now.strftime("%I:%M %p")
 
@@ -175,3 +176,124 @@ async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -> 
 
     print(f"CRITICAL: All models failed in transcribe_audio. Last error: {str(last_error)}")
     raise last_error
+
+
+QUERY_SYSTEM_PROMPT = """
+You are a data query planner for VendorIQ, a WhatsApp business assistant for Nigerian SMB owners.
+Given a user's natural language question about their business data, return a structured JSON action
+specifying what data to fetch from their database.
+
+Today's date is {today_date}. The current time is {current_time}.
+The user's business name is "{business_name}".
+
+AVAILABLE DATA:
+1. transactions table — records of sales and expenses
+   - type: "sale" or "expense"
+   - amount: number (in naira)
+   - item: string (what was sold/bought)
+   - quantity: number or null
+   - note: string or null
+   - created_at: ISO timestamp
+
+2. customers table — debtors
+   - name: string
+   - balance: number (outstanding debt in naira)
+   - updated_at: ISO timestamp
+
+3. inventory table — stock items
+   - item: string
+   - quantity: number
+   - unit: string
+   - updated_at: ISO timestamp
+
+CRITICAL: Translate relative time phrases to actual dates based on today being {today_date}.
+- "today" → start = today's date, end = today
+- "yesterday" → start = yesterday, end = yesterday
+- "this week" → start = Monday of this week, end = today
+- "last week" → start = Monday of last week, end = Sunday of last week
+- "this month" → start = 1st of this month, end = today
+- "last month" → start = 1st of last month, end = last day of last month
+- "this year" → start = Jan 1 this year, end = today
+- "last 7 days" / "past week" → start = 7 days ago, end = today
+- "last 30 days" / "past month" → start = 30 days ago, end = today
+- "last 3 months" → start = 90 days ago, end = today
+- "this morning" → start = today, end = today
+- "total sales" / "all time" → start = null, end = today
+
+Return ONLY valid JSON, no markdown, no explanation:
+{{
+  "table": "transactions",
+  "type_filter": "sale",
+  "start_date": "2026-06-01",
+  "end_date": "2026-06-30",
+  "aggregation": "total",
+  "item_filter": null,
+  "customer_filter": null,
+  "explanation": "User asked about last month's sales"
+}}
+
+Aggregation options:
+- "total": sum of amounts (return single number)
+- "list": list individual records (return all matching rows)
+- "count": count of records
+- "daily": group by day with totals per day
+- "top": return highest amounts (use with item_filter or customer_filter)
+- "comparison": comparing two periods
+
+For customer/debt questions:
+- "who owes me" → table: "customers", aggregation: "list"
+- "how much does Emeka owe" → table: "customers", customer_filter: "Emeka", aggregation: "total"
+
+For inventory questions:
+- "what's in stock" → table: "inventory", aggregation: "list"
+- "what's low on stock" → table: "inventory", aggregation: "list" (quantity < 5)
+
+For comparison questions like "compare this month to last month":
+- aggregation: "comparison"
+- use start_date and end_date for the first period
+- include "comparison_start" and "comparison_end" fields for the second period
+
+If you cannot determine the query, return:
+{{"table": null, "error": "Could not understand the query"}}
+"""
+
+
+async def generate_query_action(question: str, business_name: str) -> dict:
+    now = now_nigeria()
+    today_date = now.strftime("%A, %B %d, %Y")
+    current_time = now.strftime("%I:%M %p")
+
+    prompt = QUERY_SYSTEM_PROMPT.format(
+        today_date=today_date,
+        current_time=current_time,
+        business_name=business_name,
+    )
+
+    full_prompt = f"{prompt}\n\nUser question: {question}"
+
+    last_error = None
+    for model in MODELS:
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=full_prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.1,
+                )
+            )
+            return json.loads(response.text.strip())
+        except Exception as e:
+            print(f"WARNING: Model {model} failed in generate_query_action. Trying next... Error: {str(e)}")
+            last_error = e
+
+    print(f"CRITICAL: All models failed in generate_query_action. Last error: {str(last_error)}")
+    return {"table": None, "error": "All models failed"}
+
+
+async def format_query_results(question: str, data: dict, language: str = "english") -> str:
+    """Format query results into a natural language response."""
+    return await generate_response("smart_query", {
+        "question": question,
+        "result": data,
+    }, language=language)

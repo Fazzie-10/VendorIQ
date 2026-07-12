@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from services.tz import now_nigeria
 from services.db import get_supabase
 from services.whatsapp import send_message
 from services.gemini import generate_response
@@ -26,10 +26,10 @@ async def handle_log_sale(phone: str, user: dict, entities: dict) -> None:
         "item": item,
         "quantity": quantity,
         "note": note,
-        "created_at": datetime.now(UTC).isoformat()
+        "created_at": now_nigeria().isoformat()
     }).execute()
 
-    today = datetime.now(UTC).date().isoformat()
+    today = now_nigeria().date().isoformat()
     result = supabase.table("transactions").select("amount").eq("user_id", user["id"]).eq("type", "sale").gte("created_at", today).execute()
     today_total = sum(r["amount"] for r in result.data)
 
@@ -59,7 +59,7 @@ async def handle_log_expense(phone: str, user: dict, entities: dict) -> None:
         "amount": amount,
         "item": item,
         "note": note,
-        "created_at": datetime.now(UTC).isoformat()
+        "created_at": now_nigeria().isoformat()
     }).execute()
 
     reply = await generate_response("expense_logged", {"item": item, "amount": amount, "note": note}, language=_lang(entities))

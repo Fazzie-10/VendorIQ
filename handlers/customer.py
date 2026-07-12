@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from services.tz import now_nigeria
 from services.db import get_supabase
 from services.whatsapp import send_message
 from services.gemini import generate_response
@@ -15,7 +15,7 @@ async def handle_add_debt(phone: str, user: dict, entities: dict) -> None:
         await send_message(phone, reply)
         return
 
-    now = datetime.now(UTC)
+    now = now_nigeria()
     existing = supabase.table("customers").select("*").eq("user_id", user["id"]).ilike("name", customer_name).execute()
 
     if existing.data:
@@ -70,7 +70,7 @@ async def handle_record_payment(phone: str, user: dict, entities: dict) -> None:
         await send_message(phone, reply)
         return
 
-    now = datetime.now(UTC)
+    now = now_nigeria()
     customer = existing.data[0]
     old_balance = customer["balance"]
     new_balance = max(0, old_balance - amount)
@@ -98,7 +98,7 @@ async def handle_record_payment(phone: str, user: dict, entities: dict) -> None:
 async def handle_debt_query(phone: str, user: dict, entities: dict) -> None:
     supabase = get_supabase()
     customer_name = entities.get("customer_name")
-    now = datetime.now(UTC)
+    now = now_nigeria()
 
     if customer_name:
         result = supabase.table("customers").select("*").eq("user_id", user["id"]).ilike("name", customer_name).execute()

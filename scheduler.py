@@ -1,9 +1,12 @@
 import logging
+from datetime import timezone, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from config import settings
 from services.db import get_supabase
 from handlers.summary import send_daily_summary
+
+NIGERIA_TZ = timezone(timedelta(hours=1))
 
 logger = logging.getLogger("vendoriq.scheduler")
 scheduler = AsyncIOScheduler()
@@ -29,7 +32,7 @@ async def send_all_summaries():
 def start_scheduler():
     scheduler.add_job(
         send_all_summaries,
-        CronTrigger(hour=settings.DAILY_SUMMARY_HOUR, minute=settings.DAILY_SUMMARY_MINUTE),
+        CronTrigger(hour=settings.DAILY_SUMMARY_HOUR, minute=settings.DAILY_SUMMARY_MINUTE, timezone=NIGERIA_TZ),
         id="daily_summary",
         replace_existing=True
     )

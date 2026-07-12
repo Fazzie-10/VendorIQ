@@ -15,7 +15,7 @@ import uvicorn
 from config import settings
 from models.schemas import GreenAPIWebhookPayload
 from handlers.router import route_message
-from services.whatsapp import download_media
+from services.whatsapp import download_media, get_temp_file
 from services.gemini import transcribe_audio
 from scheduler import start_scheduler
 
@@ -80,30 +80,36 @@ async def webhook(request: Request):
         payload = GreenAPIWebhookPayload(**raw)
 
         if payload.is_from_me or payload.is_group:
-            logger.info(f"Ignored message (from_me={payload.is_from_me}, group={payload.is_group})")
+            logger.info(f"Ignored (from_me={payload.is_from_me}, group={payload.is_group})")
             return {"status": "ignored"}
         if payload.typeWebhook not in ("incomingMessageReceived",):
-            logger.info(f"Ignored webhook type: {payload.typeWebhook}")
+            logger.info(f"Ignored type: {payload.typeWebhook}")
             return {"status": "ignored"}
+
+        msg_type = payload.messageData.get("typeMessage", "")
+        logger.info(f"Webhook from {payload.sender_phone}: type={msg_type}, has_text={bool(payload.message_text)}, is_voice={payload.is_voice_message}")
+
+        if payload.is_voice_message:
+            logger.info(f"Processing voice from {payload.sender_phone}")
+            try:
+                audio_bytes, mime_type = await download_media(payload.idMessage)
+                logger.info(f"Downloaded audio: {len(audio_bytes)} bytes, type={mime_type}")
+                transcript = await transcribe_audio(audio_bytes, mime_type)
+                logger.info(f"Voice transcript: {transcript}")
+                await route_message(
+                    phone=payload.sender_phone,
+                    text=transcript,
+                    push_name=payload.push_name
+                )
+            except Exception as e:
+                logger.error(f"Voice error: {e}", exc_info=True)
+            return {"status": "voice_transcribed"}
+
         if not payload.message_text:
-            if payload.is_voice_message:
-                logger.info(f"Processing voice message from {payload.sender_phone}")
-                try:
-                    audio_bytes, mime_type = await download_media(payload.idMessage)
-                    transcript = await transcribe_audio(audio_bytes, mime_type)
-                    logger.info(f"Voice transcript: {transcript}")
-                    await route_message(
-                        phone=payload.sender_phone,
-                        text=transcript,
-                        push_name=payload.push_name
-                    )
-                except Exception as e:
-                    logger.error(f"Voice processing error: {e}", exc_info=True)
-                return {"status": "voice_transcribed"}
-            logger.info("Ignored empty message")
+            logger.info("Ignored empty non-voice message")
             return {"status": "no_text"}
 
-        logger.info(f"Processing message from {payload.sender_phone}")
+        logger.info(f"Processing text from {payload.sender_phone}: {payload.message_text[:100]}")
 
         await route_message(
             phone=payload.sender_phone,
@@ -115,6 +121,15 @@ async def webhook(request: Request):
         logger.error(f"Webhook error: {e}", exc_info=True)
 
     return {"status": "ok"}
+
+
+@app.get("/temp/{file_id}/{filename:path}")
+async def serve_temp_file(file_id: str, filename: str):
+    data = get_temp_file(file_id)
+    if data is None:
+        raise HTTPException(status_code=404, detail="File not found or expired")
+    from fastapi.responses import Response
+    return Response(content=data, media_type="application/pdf")
 
 
 @app.get("/health")

@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: str = ""
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = int(os.getenv("PORT", 8000))
+    APP_PUBLIC_URL: str = ""
     VENDORIQ_PHONE: str
     DAILY_SUMMARY_HOUR: int = 20
     DAILY_SUMMARY_MINUTE: int = 0

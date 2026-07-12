@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from services.tz import now_nigeria
 from services.db import get_supabase
 from services.whatsapp import send_message
 from services.gemini import generate_response
@@ -20,7 +20,7 @@ async def handle_update(phone: str, user: dict, entities: dict) -> None:
         new_qty = inv["quantity"] + quantity
         supabase.table("inventory").update({
             "quantity": new_qty,
-            "updated_at": datetime.now(UTC).isoformat()
+            "updated_at": now_nigeria().isoformat()
         }).eq("id", inv["id"]).execute()
     else:
         new_qty = quantity

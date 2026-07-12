@@ -1,7 +1,18 @@
-from datetime import datetime, UTC
+from services.tz import now_nigeria
 from services.db import get_supabase
 from services.whatsapp import send_message
 from services.gemini import generate_response
+
+
+def _soft_delete(supabase, txn_id: int):
+    now = now_nigeria().isoformat()
+    try:
+        supabase.table("transactions").update({
+            "deleted": True,
+            "deleted_at": now
+        }).eq("id", txn_id).execute()
+    except Exception:
+        supabase.table("transactions").delete().eq("id", txn_id).execute()
 
 
 async def handle_delete(phone: str, user: dict, entities: dict) -> None:
@@ -21,7 +32,7 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
             return
         customer = result.data[0]
         old_balance = customer["balance"]
-        supabase.table("customers").update({"balance": 0, "updated_at": datetime.now(UTC).isoformat()}).eq("id", customer["id"]).execute()
+        supabase.table("customers").update({"balance": 0, "updated_at": now_nigeria().isoformat()}).eq("id", customer["id"]).execute()
         reply = await generate_response("debt_deleted", {
             "customer": customer_name,
             "cleared_amount": old_balance
@@ -33,7 +44,7 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
         result = supabase.table("transactions").select("*").eq("user_id", user_id).ilike("item", customer_name).eq("amount", amount).order("created_at", desc=True).limit(1).execute()
         if result.data:
             txn = result.data[0]
-            supabase.table("transactions").delete().eq("id", txn["id"]).execute()
+            _soft_delete(supabase, txn["id"])
             reply = await generate_response("record_deleted", {
                 "record_type": txn["type"],
                 "amount": txn["amount"],
@@ -51,7 +62,7 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
 
         if result.data:
             txn = result.data[0]
-            supabase.table("transactions").delete().eq("id", txn["id"]).execute()
+            _soft_delete(supabase, txn["id"])
             reply = await generate_response("record_deleted", {
                 "record_type": txn["type"],
                 "amount": txn["amount"],

@@ -9,3 +9,4 @@ python-dotenv
 APScheduler
 jinja2
 python-multipart
+fpdf2

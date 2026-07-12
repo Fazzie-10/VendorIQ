@@ -20,9 +20,7 @@ cloudflared.exe
 cloudflared
 *.log
 
-# Assets
-qr.png
-*.png
+
 
 # OS
 .DS_Store
