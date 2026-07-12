@@ -24,6 +24,9 @@ async def route_message(phone: str, text: str, push_name: str = "") -> None:
     parsed = await parse_intent(text)
     intent = parsed.get("intent", "unknown")
     entities = parsed.get("entities", {})
+    language = parsed.get("language", "english")
+
+    entities["_language"] = language
 
     handlers = {
         "log_sale": sales.handle_log_sale,
@@ -36,6 +39,7 @@ async def route_message(phone: str, text: str, push_name: str = "") -> None:
         "get_summary": summary.handle_summary,
         "delete_record": delete.handle_delete,
         "greeting": onboarding.handle_greeting,
+        "help": onboarding.handle_help,
         "unknown": onboarding.handle_unknown_intent,
     }
 

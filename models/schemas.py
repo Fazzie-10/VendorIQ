@@ -23,6 +23,28 @@ class GreenAPIWebhookPayload(BaseModel):
         return ""
 
     @property
+    def is_voice_message(self) -> bool:
+        return self.messageData.get("typeMessage", "") in ("voiceMessage", "audioMessage")
+
+    @property
+    def voice_download_url(self) -> str:
+        for key in ("voiceMessageData", "audioMessageData"):
+            data = self.messageData.get(key, {}) or {}
+            url = data.get("downloadUrl", "")
+            if url:
+                return url
+        return ""
+
+    @property
+    def voice_mime_type(self) -> str:
+        for key in ("voiceMessageData", "audioMessageData"):
+            data = self.messageData.get(key, {}) or {}
+            mt = data.get("mimeType", "")
+            if mt:
+                return mt
+        return "audio/ogg"
+
+    @property
     def push_name(self) -> str:
         return self.senderData.get("senderName", "")
 

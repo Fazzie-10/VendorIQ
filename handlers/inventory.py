@@ -31,11 +31,12 @@ async def handle_update(phone: str, user: dict, entities: dict) -> None:
             "unit": entities.get("unit", "units")
         }).execute()
 
+    lang = entities.get("_language", "english")
     reply = await generate_response(
         "inventory_updated", {
             "item": item,
             "added": quantity,
             "total": new_qty
-        }
+        }, language=lang
     )
     await send_message(phone, reply)

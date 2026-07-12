@@ -5,10 +5,11 @@ from services.gemini import generate_response
 
 
 async def handle_summary(phone: str, user: dict, entities: dict) -> None:
-    await send_daily_summary(phone, user)
+    lang = entities.get("_language", "english")
+    await send_daily_summary(phone, user, lang)
 
 
-async def send_daily_summary(phone: str, user: dict) -> None:
+async def send_daily_summary(phone: str, user: dict, language: str = "english") -> None:
     supabase = get_supabase()
     today = datetime.now(UTC).date().isoformat()
 
@@ -31,7 +32,7 @@ async def send_daily_summary(phone: str, user: dict) -> None:
             "today_expenses": [{"item": e["item"], "amount": e["amount"], "note": e.get("note")} for e in expenses.data],
             "top_debtors": [{"name": d["name"], "balance": d["balance"]} for d in debtors.data],
             "low_stock_items": [{"item": i["item"], "quantity": i["quantity"], "unit": i["unit"]} for i in low_stock.data]
-        }
+        }, language=language
     )
 
     await send_message(phone, reply)

@@ -32,15 +32,24 @@ async def handle_unknown(phone: str, push_name: str = "") -> None:
 
 
 async def handle_greeting(phone: str, user: dict, entities: dict) -> None:
+    lang = entities.get("_language", "english")
     reply = await generate_response("greeting", {
         "user_name": user["name"],
-    })
+    }, language=lang)
+    await send_message(phone, reply)
+
+
+async def handle_help(phone: str, user: dict, entities: dict) -> None:
+    lang = entities.get("_language", "english")
+    reply = await generate_response("help", {
+        "user_name": user["name"],
+    }, language=lang)
     await send_message(phone, reply)
 
 
 async def handle_unknown_intent(phone: str, user: dict, entities: dict) -> None:
-    message = (
-        "I didn't quite get that 🤔\n\n"
-        "Try: 'Sold 5k', 'How much today?', 'Emeka owes 30k', or 'Summary'"
-    )
-    await send_message(phone, message)
+    lang = entities.get("_language", "english")
+    reply = await generate_response("unknown", {
+        "user_name": user["name"],
+    }, language=lang)
+    await send_message(phone, reply)

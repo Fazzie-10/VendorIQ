@@ -12,6 +12,8 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
     period = entities.get("period")
     user_id = user["id"]
 
+    lang = entities.get("_language", "english")
+
     if customer_name and target_type == "debt" and period == "all":
         result = supabase.table("customers").select("*").eq("user_id", user_id).ilike("name", customer_name).execute()
         if not result.data:
@@ -23,7 +25,7 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
         reply = await generate_response("debt_deleted", {
             "customer": customer_name,
             "cleared_amount": old_balance
-        })
+        }, language=lang)
         await send_message(phone, reply)
         return
 
@@ -37,7 +39,7 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
                 "amount": txn["amount"],
                 "item": txn.get("item", ""),
                 "customer": customer_name
-            })
+            }, language=lang)
             await send_message(phone, reply)
             return
 
@@ -55,7 +57,7 @@ async def handle_delete(phone: str, user: dict, entities: dict) -> None:
                 "amount": txn["amount"],
                 "item": txn.get("item", ""),
                 "customer": txn.get("item", "")
-            })
+            }, language=lang)
             await send_message(phone, reply)
             return
 

@@ -12,8 +12,9 @@ INTENT_SYSTEM_PROMPT = """
 You are an intent classifier for a WhatsApp business bot used by Nigerian SMB owners.
 They message in English, Pidgin, or Yoruba mixed with numbers and naira amounts.
 
-LANGUAGE RULE: Detect the user's language (English, Pidgin, Yoruba, Igbo, Hausa) and
-note it — the response generator will match their language. But always return JSON in English.
+LANGUAGE RULE: Detect what language the user wrote in. Classify as one of:
+"english", "pidgin", "yoruba", "igbo", "hausa", or "mixed".
+Include this as the "language" field in your JSON output.
 
 Classify the user's message into one of these intents:
 - log_sale: They sold something (e.g. "sold 3 bags of rice at 52k", "I sell phone case 5k")
@@ -25,7 +26,8 @@ Classify the user's message into one of these intents:
 - update_inventory: Stock update (e.g. "received 50 bags", "stock: 20 cartons indomie")
 - get_summary: Want full report (e.g. "summary", "report", "show me everything")
 - delete_record: Want to remove something (e.g. "delete my last sale", "remove the 45k debt for Emeka", "cancel that", "delete Emeka's debt")
-- greeting: Just saying hi, small talk, casual chat (e.g. "good morning", "how far", "hello", "I'm fine", "thank you", "anything you want to tell me")
+- greeting: Casual chat, checking in, gratitude (e.g. "good morning", "how far", "hello", "I'm fine", "thank you", "anything you want to tell me", "how you dey", "you there?")
+- help: Asking about capabilities (e.g. "what can you do", "what do you do", "help", "how does this work", "what do you support", "show me what you can do", "features")
 - unknown: Cannot classify
 
 AMOUNT CALCULATION RULES (CRITICAL):
@@ -59,6 +61,7 @@ DELETE RECORD RULES:
 Return ONLY valid JSON, no markdown, no explanation:
 {
   "intent": "log_sale",
+  "language": "english",
   "entities": {
     "amount": 156000,
     "item": "bags of rice",
@@ -100,7 +103,7 @@ async def parse_intent(message: str) -> dict:
     raise last_error
 
 
-async def generate_response(context: str, data: dict) -> str:
+async def generate_response(context: str, data: dict, language: str = "english") -> str:
     now = datetime.now()
     today_date = now.strftime("%A, %B %d, %Y")
     current_time = now.strftime("%I:%M %p")
@@ -113,8 +116,12 @@ Be warm, respond enthusiastically, and match the user's energy. If they're casua
 CRITICAL: Today is {today_date}. The current time is {current_time}.
 Base ALL date references on this fact. Do NOT say "yesterday" unless the data explicitly says so.
 
-LANGUAGE RULE: If the user wrote in Yoruba, Igbo, Hausa, or Pidgin — respond in the same language.
-If they wrote in English, respond in English with light Pidgin where natural.
+LANGUAGE RULE (STRICT — FOLLOW THIS EXACTLY):
+The user wrote to you in **{language}**. You MUST write your entire response in **{language}**.
+Do NOT switch languages mid-response. If the language is "english", you may use light Pidgin words naturally.
+If the language is "yoruba", "igbo", or "hausa", respond entirely in that language.
+If the language is "pidgin", respond entirely in Nigerian Pidgin.
+If the language is "mixed", respond in the dominant language from their message.
 
 Generate a SHORT, warm WhatsApp reply in plain text (no markdown, no asterisks, no bullet symbols).
 Keep it under 5 lines. Use emojis sparingly. Sound human, not robotic.
@@ -128,6 +135,7 @@ Rules:
 - If greeting or small talk, be warm and natural — ask how they're doing
 - If showing revenue up/down, note the percentage change
 - End with a brief motivating line only if appropriate
+- Respond ONLY in {language}
 """
 
     last_error = None
@@ -144,4 +152,26 @@ Rules:
             last_error = e
 
     print(f"CRITICAL: All models failed in generate_response. Last error: {str(last_error)}")
+    raise last_error
+
+
+async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -> str:
+    """Transcribe voice note audio using Gemini."""
+    prompt = "Transcribe this audio message word for word. Return only the transcribed text, nothing else."
+    last_error = None
+    for model in MODELS:
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=[
+                    types.Part.from_bytes(data=audio_bytes, mime_type=mime_type),
+                    prompt,
+                ]
+            )
+            return response.text.strip()
+        except Exception as e:
+            print(f"WARNING: Model {model} failed in transcribe_audio. Trying next... Error: {str(e)}")
+            last_error = e
+
+    print(f"CRITICAL: All models failed in transcribe_audio. Last error: {str(last_error)}")
     raise last_error

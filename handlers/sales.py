@@ -4,6 +4,10 @@ from services.whatsapp import send_message
 from services.gemini import generate_response
 
 
+def _lang(entities: dict) -> str:
+    return entities.get("_language", "english")
+
+
 async def handle_log_sale(phone: str, user: dict, entities: dict) -> None:
     supabase = get_supabase()
     amount = entities.get("amount", 0)
@@ -35,7 +39,7 @@ async def handle_log_sale(phone: str, user: dict, entities: dict) -> None:
         "amount": amount,
         "today_total": today_total,
         "note": note
-    })
+    }, language=_lang(entities))
     await send_message(phone, reply)
 
 
@@ -58,5 +62,5 @@ async def handle_log_expense(phone: str, user: dict, entities: dict) -> None:
         "created_at": datetime.now(UTC).isoformat()
     }).execute()
 
-    reply = await generate_response("expense_logged", {"item": item, "amount": amount, "note": note})
+    reply = await generate_response("expense_logged", {"item": item, "amount": amount, "note": note}, language=_lang(entities))
     await send_message(phone, reply)

@@ -39,7 +39,7 @@ async def handle_revenue_query(phone: str, user: dict, entities: dict) -> None:
             "total_expenses": total_expenses,
             "profit": profit,
             "transaction_count": len(sales.data)
-        }
+        }, language=entities.get("_language", "english")
     )
 
     await send_message(phone, reply)

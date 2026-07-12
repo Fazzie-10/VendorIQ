@@ -42,12 +42,13 @@ async def handle_add_debt(phone: str, user: dict, entities: dict) -> None:
         "created_at": now.isoformat()
     }).execute()
 
+    lang = entities.get("_language", "english")
     reply = await generate_response("debt_added", {
         "customer": customer_name,
         "added_amount": amount,
         "total_owed": new_balance,
         "note": note
-    })
+    }, language=lang)
     await send_message(phone, reply)
 
 
@@ -84,12 +85,13 @@ async def handle_record_payment(phone: str, user: dict, entities: dict) -> None:
         "created_at": now.isoformat()
     }).execute()
 
+    lang = entities.get("_language", "english")
     reply = await generate_response("payment_recorded", {
         "customer": customer_name,
         "paid": amount,
         "remaining_balance": new_balance,
         "note": note
-    })
+    }, language=lang)
     await send_message(phone, reply)
 
 
@@ -107,11 +109,12 @@ async def handle_debt_query(phone: str, user: dict, entities: dict) -> None:
             if last_event.data:
                 days_owed = (now - datetime.fromisoformat(last_event.data[0]["created_at"].replace("Z", "+00:00"))).days
 
+            lang = entities.get("_language", "english")
             reply = await generate_response("single_debt_query", {
                 "customer": c["name"],
                 "balance": c["balance"],
                 "days_owed": days_owed
-            })
+            }, language=lang)
         else:
             reply = f"No record for {customer_name}."
     else:
@@ -124,9 +127,10 @@ async def handle_debt_query(phone: str, user: dict, entities: dict) -> None:
                 days_owed = (now - datetime.fromisoformat(last_event.data[0]["created_at"].replace("Z", "+00:00"))).days
             debtors_data.append({"name": c["name"], "balance": c["balance"], "days_owed": days_owed})
 
+        lang = entities.get("_language", "english")
         reply = await generate_response("all_debts_query", {
             "debtors": debtors_data,
             "total_outstanding": sum(c["balance"] for c in result.data)
-        })
+        }, language=lang)
 
     await send_message(phone, reply)

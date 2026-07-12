@@ -15,6 +15,8 @@ import uvicorn
 from config import settings
 from models.schemas import GreenAPIWebhookPayload
 from handlers.router import route_message
+from services.whatsapp import download_media
+from services.gemini import transcribe_audio
 from scheduler import start_scheduler
 
 
@@ -84,6 +86,20 @@ async def webhook(request: Request):
             logger.info(f"Ignored webhook type: {payload.typeWebhook}")
             return {"status": "ignored"}
         if not payload.message_text:
+            if payload.is_voice_message:
+                logger.info(f"Processing voice message from {payload.sender_phone}")
+                try:
+                    audio_bytes, mime_type = await download_media(payload.idMessage)
+                    transcript = await transcribe_audio(audio_bytes, mime_type)
+                    logger.info(f"Voice transcript: {transcript}")
+                    await route_message(
+                        phone=payload.sender_phone,
+                        text=transcript,
+                        push_name=payload.push_name
+                    )
+                except Exception as e:
+                    logger.error(f"Voice processing error: {e}", exc_info=True)
+                return {"status": "voice_transcribed"}
             logger.info("Ignored empty message")
             return {"status": "no_text"}
 
