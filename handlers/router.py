@@ -1,7 +1,7 @@
 from services.gemini import parse_intent
 from services.db import get_supabase
 from services.whatsapp import send_message
-from handlers import onboarding, sales, query, customer, inventory, summary
+from handlers import onboarding, sales, query, customer, inventory, summary, delete
 
 
 async def route_message(phone: str, text: str, push_name: str = "") -> None:
@@ -34,6 +34,7 @@ async def route_message(phone: str, text: str, push_name: str = "") -> None:
         "query_debt": customer.handle_debt_query,
         "update_inventory": inventory.handle_update,
         "get_summary": summary.handle_summary,
+        "delete_record": delete.handle_delete,
         "greeting": onboarding.handle_greeting,
         "unknown": onboarding.handle_unknown_intent,
     }

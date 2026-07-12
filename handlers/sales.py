@@ -9,6 +9,7 @@ async def handle_log_sale(phone: str, user: dict, entities: dict) -> None:
     amount = entities.get("amount", 0)
     item = entities.get("item", "goods")
     quantity = entities.get("quantity")
+    note = entities.get("note")
 
     if not amount:
         await send_message(phone, "I couldn't read the amount. Try: 'Sold 3 bags of rice at 52k'")
@@ -20,6 +21,7 @@ async def handle_log_sale(phone: str, user: dict, entities: dict) -> None:
         "amount": amount,
         "item": item,
         "quantity": quantity,
+        "note": note,
         "created_at": datetime.now(UTC).isoformat()
     }).execute()
 
@@ -31,7 +33,8 @@ async def handle_log_sale(phone: str, user: dict, entities: dict) -> None:
         "item": item,
         "quantity": quantity,
         "amount": amount,
-        "today_total": today_total
+        "today_total": today_total,
+        "note": note
     })
     await send_message(phone, reply)
 
@@ -40,6 +43,7 @@ async def handle_log_expense(phone: str, user: dict, entities: dict) -> None:
     supabase = get_supabase()
     amount = entities.get("amount", 0)
     item = entities.get("item", "expense")
+    note = entities.get("note")
 
     if not amount:
         await send_message(phone, "Couldn't read the amount. Try: 'Bought goods for 30k'")
@@ -50,8 +54,9 @@ async def handle_log_expense(phone: str, user: dict, entities: dict) -> None:
         "type": "expense",
         "amount": amount,
         "item": item,
+        "note": note,
         "created_at": datetime.now(UTC).isoformat()
     }).execute()
 
-    reply = await generate_response("expense_logged", {"item": item, "amount": amount})
+    reply = await generate_response("expense_logged", {"item": item, "amount": amount, "note": note})
     await send_message(phone, reply)

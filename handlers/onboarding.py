@@ -1,5 +1,6 @@
 from services.whatsapp import send_message
 from services.db import get_supabase
+from services.gemini import generate_response
 
 
 WELCOME_MESSAGE = """Welcome to VendorIQ! 🎉
@@ -31,11 +32,10 @@ async def handle_unknown(phone: str, push_name: str = "") -> None:
 
 
 async def handle_greeting(phone: str, user: dict, entities: dict) -> None:
-    message = (
-        f"Hey {user['name']}! 👋 VendorIQ is ready.\n"
-        f"Log a sale, check revenue, or type 'Summary' for your daily report."
-    )
-    await send_message(phone, message)
+    reply = await generate_response("greeting", {
+        "user_name": user["name"],
+    })
+    await send_message(phone, reply)
 
 
 async def handle_unknown_intent(phone: str, user: dict, entities: dict) -> None:
