@@ -5,48 +5,40 @@ from typing import Optional
 class GreenAPIWebhookPayload(BaseModel):
     typeWebhook: str
     instanceData: dict
-    timestamp: int
-    idMessage: str
-    senderData: dict
-    messageData: dict
+    timestamp: Optional[int] = None
+    idMessage: Optional[str] = None
+    senderData: Optional[dict] = None
+    messageData: Optional[dict] = None
 
     @property
     def sender_phone(self) -> str:
+        if not self.senderData:
+            return ""
         chat_id = self.senderData.get("chatId", "")
         return chat_id.replace("@c.us", "").replace("@g.us", "")
 
     @property
     def message_text(self) -> str:
+        if not self.messageData:
+            return ""
         msg_type = self.messageData.get("typeMessage", "")
         if msg_type == "textMessage":
-            return (self.messageData.get("textMessageData", {}) or {}).get("textMessage", "")
+            return (self.messageData.get("textMessageData", {}) or {}).get("textMessage", "").strip()
+        if msg_type == "extendedTextMessage":
+            return (self.messageData.get("extendedTextMessageData", {}) or {}).get("text", "").strip()
         return ""
 
     @property
     def is_voice_message(self) -> bool:
+        if not self.messageData:
+            return False
         return self.messageData.get("typeMessage", "") in ("voiceMessage", "audioMessage")
 
     @property
-    def voice_download_url(self) -> str:
-        for key in ("voiceMessageData", "audioMessageData"):
-            data = self.messageData.get(key, {}) or {}
-            url = data.get("downloadUrl", "")
-            if url:
-                return url
-        return ""
-
-    @property
-    def voice_mime_type(self) -> str:
-        for key in ("voiceMessageData", "audioMessageData"):
-            data = self.messageData.get(key, {}) or {}
-            mt = data.get("mimeType", "")
-            if mt:
-                return mt
-        return "audio/ogg"
-
-    @property
     def push_name(self) -> str:
-        return self.senderData.get("senderName", "")
+        if not self.senderData:
+            return ""
+        return self.senderData.get("senderName", "") or self.senderData.get("chatName", "")
 
     @property
     def is_from_me(self) -> bool:
@@ -54,5 +46,7 @@ class GreenAPIWebhookPayload(BaseModel):
 
     @property
     def is_group(self) -> bool:
+        if not self.senderData:
+            return False
         chat_id = self.senderData.get("chatId", "")
         return "@g.us" in chat_id

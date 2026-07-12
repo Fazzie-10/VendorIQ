@@ -86,12 +86,18 @@ async def webhook(request: Request):
             logger.info(f"Ignored type: {payload.typeWebhook}")
             return {"status": "ignored"}
 
-        msg_type = payload.messageData.get("typeMessage", "")
-        logger.info(f"Webhook from {payload.sender_phone}: type={msg_type}, has_text={bool(payload.message_text)}, is_voice={payload.is_voice_message}")
+        if not payload.messageData:
+            logger.info("Ignored message with no messageData")
+            return {"status": "ignored"}
+
+        logger.info(f"Webhook from {payload.sender_phone}: has_text={bool(payload.message_text)}, is_voice={payload.is_voice_message}")
 
         if payload.is_voice_message:
             logger.info(f"Processing voice from {payload.sender_phone}")
             try:
+                if not payload.idMessage:
+                    logger.error("No idMessage for voice download")
+                    return {"status": "error"}
                 audio_bytes, mime_type = await download_media(payload.idMessage)
                 logger.info(f"Downloaded audio: {len(audio_bytes)} bytes, type={mime_type}")
                 transcript = await transcribe_audio(audio_bytes, mime_type)
