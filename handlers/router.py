@@ -46,6 +46,8 @@ async def route_message(phone: str, text: str, push_name: str = "") -> None:
         "delete_record": delete.handle_delete,
         "request_receipt": receipt.handle_receipt_request,
         "greeting": onboarding.handle_greeting,
+        "acknowledgment": onboarding.handle_acknowledgment,
+        "status_response": onboarding.handle_status_response,
         "help": onboarding.handle_help,
         "unknown": onboarding.handle_unknown_intent,
     }

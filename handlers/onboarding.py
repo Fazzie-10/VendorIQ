@@ -39,6 +39,20 @@ async def handle_greeting(phone: str, user: dict, entities: dict) -> None:
     await send_message(phone, reply)
 
 
+async def handle_acknowledgment(phone: str, user: dict, entities: dict) -> None:
+    lang = entities.get("_language", "english")
+    reply = await generate_response("acknowledgment", {}, language=lang)
+    await send_message(phone, reply)
+
+
+async def handle_status_response(phone: str, user: dict, entities: dict) -> None:
+    lang = entities.get("_language", "english")
+    reply = await generate_response("status_response", {
+        "business_name": user["business_name"],
+    }, language=lang)
+    await send_message(phone, reply)
+
+
 async def handle_help(phone: str, user: dict, entities: dict) -> None:
     # Hardcoded — never ask Gemini to list features, it invents things
     reply = f"""VendorIQ commands for {user['business_name']}:
