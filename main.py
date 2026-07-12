@@ -15,7 +15,7 @@ import uvicorn
 from config import settings
 from models.schemas import GreenAPIWebhookPayload
 from handlers.router import route_message
-from services.whatsapp import download_media, get_temp_file, send_message
+from services.whatsapp import download_media, send_message
 from services.gemini import transcribe_audio
 from scheduler import start_scheduler
 
@@ -95,7 +95,7 @@ async def webhook(request: Request):
 
         if payload.is_audio and payload.audio_message_id:
             try:
-                audio_bytes, mime_type = await download_media(payload.audio_message_id)
+                audio_bytes, mime_type = await download_media(payload.sender_phone, payload.audio_message_id)
                 transcribed = await transcribe_audio(audio_bytes, mime_type)
                 if transcribed:
                     await route_message(
@@ -127,15 +127,6 @@ async def webhook(request: Request):
         logger.error(f"Webhook error: {e}", exc_info=True)
 
     return {"status": "ok"}
-
-
-@app.get("/temp/{file_id}/{filename:path}")
-async def serve_temp_file(file_id: str, filename: str):
-    data = get_temp_file(file_id)
-    if data is None:
-        raise HTTPException(status_code=404, detail="File not found or expired")
-    from fastapi.responses import Response
-    return Response(content=data, media_type="application/pdf")
 
 
 @app.get("/health")

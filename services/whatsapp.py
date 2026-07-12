@@ -1,20 +1,8 @@
-import uuid
 import httpx
 from config import settings
 
 GREEN_API_BASE = f"https://api.green-api.com/waInstance{settings.GREEN_API_INSTANCE_ID}"
-
-_temp_files: dict[str, bytes] = {}
-
-
-def store_temp_file(data: bytes) -> str:
-    file_id = uuid.uuid4().hex[:16]
-    _temp_files[file_id] = data
-    return file_id
-
-
-def get_temp_file(file_id: str) -> bytes | None:
-    return _temp_files.pop(file_id, None)
+GREEN_MEDIA_BASE = f"https://media.green-api.com/waInstance{settings.GREEN_API_INSTANCE_ID}"
 
 
 async def send_message(phone: str, text: str) -> dict:
@@ -29,33 +17,40 @@ async def send_message(phone: str, text: str) -> dict:
         return response.json()
 
 
-async def send_file_url(phone: str, file_bytes: bytes, filename: str, caption: str = "") -> bool:
-    file_id = store_temp_file(file_bytes)
-    base_url = settings.APP_PUBLIC_URL or "http://localhost:8000"
-    file_url = f"{base_url}/temp/{file_id}/{filename}"
-    url = f"{GREEN_API_BASE}/sendFileByUrl/{settings.GREEN_API_TOKEN}"
-    payload = {
-        "chatId": f"{phone}@c.us",
-        "urlFile": file_url,
-        "fileName": filename,
-        "caption": caption,
-    }
+async def send_file_upload(phone: str, file_bytes: bytes, filename: str, caption: str = "") -> bool:
+    url = f"{GREEN_MEDIA_BASE}/sendFileByUpload/{settings.GREEN_API_TOKEN}"
     async with httpx.AsyncClient(timeout=60.0) as client:
         try:
-            response = await client.post(url, json=payload)
+            files = {"file": (filename, file_bytes, "application/pdf")}
+            data = {"chatId": f"{phone}@c.us", "fileName": filename, "caption": caption}
+            response = await client.post(url, data=data, files=files)
             response.raise_for_status()
             return True
         except Exception:
             return False
 
 
-async def download_media(message_id: str) -> tuple[bytes, str]:
-    url = f"{GREEN_API_BASE}/downloadFile/{settings.GREEN_API_TOKEN}/{message_id}"
+async def download_media(phone: str, message_id: str) -> tuple[bytes, str]:
+    url = f"{GREEN_API_BASE}/downloadFile/{settings.GREEN_API_TOKEN}"
+    payload = {
+        "chatId": f"{phone}@c.us",
+        "idMessage": message_id,
+    }
     async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.get(url)
+        response = await client.post(url, json=payload)
         response.raise_for_status()
-        content_type = response.headers.get("content-type", "audio/ogg")
-        return response.content, content_type
+        data = response.json()
+        download_url = data.get("downloadUrl")
+        if not download_url:
+            raise ValueError("No downloadUrl in response")
+        file_response = await client.get(download_url)
+        file_response.raise_for_status()
+        content_type = file_response.headers.get("content-type", "audio/ogg")
+        return file_response.content, content_type
+
+
+async def send_file_url(phone: str, file_bytes: bytes, filename: str, caption: str = "") -> bool:
+    return await send_file_upload(phone, file_bytes, filename, caption)
 
 
 async def set_webhook(webhook_url: str) -> dict:
