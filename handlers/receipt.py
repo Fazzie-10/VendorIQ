@@ -36,3 +36,5 @@ async def handle_receipt_request(phone: str, user: dict, entities: dict) -> None
             "item": txn.get("item", "Goods"),
         }, language=lang)
         await send_message(phone, reply)
+    else:
+        await send_message(phone, "I generated the receipt but ran into an issue sending it. Please try again.")

@@ -34,14 +34,14 @@ async def handle_unknown(phone: str, push_name: str = "") -> None:
 async def handle_greeting(phone: str, user: dict, entities: dict) -> None:
     lang = entities.get("_language", "english")
     reply = await generate_response("greeting", {
-        "user_name": user["name"],
+        "business_name": user["business_name"],
     }, language=lang)
     await send_message(phone, reply)
 
 
 async def handle_help(phone: str, user: dict, entities: dict) -> None:
     # Hardcoded — never ask Gemini to list features, it invents things
-    reply = f"""VendorIQ commands for {user['name']}:
+    reply = f"""VendorIQ commands for {user['business_name']}:
 
 Log sales: "Sold 3 bags rice at 52k"
 Log expense: "Bought goods for 30k"
@@ -61,6 +61,6 @@ Ask anything about your business in plain English."""
 async def handle_unknown_intent(phone: str, user: dict, entities: dict) -> None:
     lang = entities.get("_language", "english")
     reply = await generate_response("unknown", {
-        "user_name": user["name"],
+        "business_name": user["business_name"],
     }, language=lang)
     await send_message(phone, reply)

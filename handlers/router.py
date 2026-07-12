@@ -18,7 +18,7 @@ async def route_message(phone: str, text: str, push_name: str = "") -> None:
         if text.strip().upper() == "START":
             await onboarding.activate(phone, user)
         else:
-            await send_message(phone, f"Hi {user['name']}! Send START to activate your VendorIQ account 🚀")
+            await send_message(phone, f"Hi {user['business_name']}! Send START to activate your VendorIQ account 🚀")
         return
 
     # Active user sending START again — re-show welcome/help
