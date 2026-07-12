@@ -23,6 +23,15 @@ from scheduler import start_scheduler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting VendorIQ...")
+
+    from services.db import get_supabase
+    try:
+        supabase = get_supabase()
+        supabase.storage.create_bucket("receipts", {"public": True})
+        logger.info("Created receipts storage bucket")
+    except Exception as e:
+        logger.info(f"Receipts bucket check: {e}")
+
     start_scheduler()
     logger.info(f"Scheduler started (daily summary at {settings.DAILY_SUMMARY_HOUR}:{settings.DAILY_SUMMARY_MINUTE:02d})")
     yield
