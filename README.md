@@ -10,31 +10,21 @@ Log sales, track debts, check revenue, and get daily summaries — all by sendin
 
 ## Tech Stack
 
-- Python 3.12+, FastAPI 0.115+
+- Python 3.12+, FastAPI
 - Supabase (PostgreSQL)
 - Google Gemini 2.0 Flash (intent parsing + response generation)
-- Evolution API v2 (WhatsApp automation)
+- Green API (WhatsApp automation — cloud-hosted, no Docker)
 - APScheduler (daily summary cron)
 
 ---
 
-## Setup
+## Quick Start
 
-### 1. Evolution API (WhatsApp Gateway)
+### 1. Green API Setup
 
-Run Evolution API v2 locally with Docker:
-
-```bash
-docker run -d \
-  --name evolution-api \
-  -p 8080:8080 \
-  -e AUTHENTICATION_API_KEY=your_chosen_api_key \
-  -e DATABASE_ENABLED=false \
-  -e CORS_ORIGIN="*" \
-  atendai/evolution-api:v2.2.3
-```
-
-After running, visit `http://localhost:8080/manager` to create an instance named **vendoriq** and scan the QR code with your WhatsApp.
+1. Sign up at [green-api.com](https://green-api.com)
+2. Create an instance and pair your WhatsApp number
+3. Note your `idInstance` and `apiToken`
 
 ### 2. Clone and Configure
 
@@ -54,49 +44,25 @@ cp .env.example .env
 
 ### 3. Supabase Database
 
-Create a Supabase project and run the schema from `db/schema.sql` in the SQL Editor.
+Create a Supabase project and run `db/schema.sql` in the SQL Editor.
 
 ### 4. Gemini API Key
 
 Get a Gemini API key at https://aistudio.google.com/apikey
 
-### 5. Cloudflare Tunnel (for Webhook URL)
-
-For testing, use a quick tunnel:
-
-```bash
-cloudflared tunnel --url http://localhost:8000
-```
-
-This gives a temporary `*.trycloudflare.com` URL — fine for MVP testing.
-
-For production, set up a named tunnel:
-
-```bash
-cloudflared tunnel login
-cloudflared tunnel create vendoriq
-```
-
-Configure `~/.cloudflared/config.yml` and run:
-
-```bash
-cloudflared tunnel run vendoriq
-```
-
-### 6. Run the App
+### 5. Run the App
 
 ```bash
 python main.py
 ```
 
-### 7. Set Up Webhook
+### 6. Set Up Webhook
 
-Configure Evolution API to send webhooks to your tunnel URL:
+Configure Green API to send incoming messages to your webhook URL:
 
-```
-POST http://localhost:8080/webhook/set/vendoriq
-Body: { "url": "https://your-tunnel-url.trycloudflare.com/webhook" }
-```
+1. Go to Green API → your instance → Settings
+2. Set Webhook URL to `https://your-url.com/webhook`
+3. Or for local testing, use a tunnel: `cloudflared tunnel --url http://localhost:8000`
 
 ---
 
@@ -110,13 +76,29 @@ Body: { "url": "https://your-tunnel-url.trycloudflare.com/webhook" }
 
 ---
 
+## Railway Deployment
+
+Deploy directly from GitHub:
+
+1. Push to a GitHub repo
+2. Create a new Railway project from the repo
+3. Add the environment variables from `.env.example` in Railway dashboard
+4. Railway auto-detects `Procfile` and `railway.json`
+5. Set the domain and update your Green API webhook URL
+
+No Docker needed. Railway handles Python natively via Nixpacks.
+
+---
+
 ## Project Structure
 
 ```
 vendoriq/
 ├── main.py              # FastAPI entry point
 ├── config.py            # Settings from .env
-├── services/            # Supabase, Gemini, Evolution API
+├── Procfile             # Railway start command
+├── railway.json         # Railway config
+├── services/            # Supabase, Gemini, Green API
 ├── handlers/            # Message routing and business logic
 ├── models/              # Pydantic schemas
 ├── db/schema.sql        # Database tables
@@ -124,7 +106,8 @@ vendoriq/
 ├── static/              # CSS
 ├── scheduler.py         # Daily summary cron
 ├── requirements.txt
-└── .env.example
+├── .env.example
+└── README.md
 ```
 
 ---

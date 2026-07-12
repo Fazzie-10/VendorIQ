@@ -1,6 +1,6 @@
 from datetime import datetime, UTC
 from services.db import get_supabase
-from services.evolution import send_message
+from services.whatsapp import send_message
 from services.gemini import generate_response
 
 
@@ -20,13 +20,16 @@ async def send_daily_summary(phone: str, user: dict) -> None:
     total_sales = sum(r["amount"] for r in sales.data)
     total_expenses = sum(r["amount"] for r in expenses.data)
 
-    reply = await generate_response("daily_summary", {
-        "business_name": user["business_name"],
-        "date": today,
-        "total_sales": total_sales,
-        "total_expenses": total_expenses,
-        "profit": total_sales - total_expenses,
-        "top_debtors": [{"name": d["name"], "balance": d["balance"]} for d in debtors.data],
-        "low_stock_items": [{"item": i["item"], "quantity": i["quantity"], "unit": i["unit"]} for i in low_stock.data]
-    })
+    reply = await generate_response(
+        "daily_summary", {
+            "business_name": user["business_name"],
+            "date": today,
+            "total_sales": total_sales,
+            "total_expenses": total_expenses,
+            "profit": total_sales - total_expenses,
+            "top_debtors": [{"name": d["name"], "balance": d["balance"]} for d in debtors.data],
+            "low_stock_items": [{"item": i["item"], "quantity": i["quantity"], "unit": i["unit"]} for i in low_stock.data]
+        }
+    )
+
     await send_message(phone, reply)

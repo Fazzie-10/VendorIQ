@@ -1,6 +1,6 @@
 from datetime import datetime, UTC, timedelta
 from services.db import get_supabase
-from services.evolution import send_message
+from services.whatsapp import send_message
 from services.gemini import generate_response
 
 
@@ -32,11 +32,14 @@ async def handle_revenue_query(phone: str, user: dict, entities: dict) -> None:
     total_expenses = sum(r["amount"] for r in expenses.data)
     profit = total_sales - total_expenses
 
-    reply = await generate_response("revenue_query", {
-        "period": label,
-        "total_sales": total_sales,
-        "total_expenses": total_expenses,
-        "profit": profit,
-        "transaction_count": len(sales.data)
-    })
+    reply = await generate_response(
+        "revenue_query", {
+            "period": label,
+            "total_sales": total_sales,
+            "total_expenses": total_expenses,
+            "profit": profit,
+            "transaction_count": len(sales.data)
+        }
+    )
+
     await send_message(phone, reply)

@@ -1,3 +1,10 @@
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("vendoriq")
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -6,15 +13,18 @@ from contextlib import asynccontextmanager
 import uvicorn
 
 from config import settings
-from models.schemas import EvolutionWebhookPayload
+from models.schemas import GreenAPIWebhookPayload
 from handlers.router import route_message
 from scheduler import start_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Starting VendorIQ...")
     start_scheduler()
+    logger.info(f"Scheduler started (daily summary at {settings.DAILY_SUMMARY_HOUR}:{settings.DAILY_SUMMARY_MINUTE:02d})")
     yield
+    logger.info("VendorIQ shutdown complete")
 
 
 app = FastAPI(title="VendorIQ", lifespan=lifespan)
@@ -25,10 +35,10 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/", response_class=HTMLResponse)
 async def landing_page(request: Request):
     return templates.TemplateResponse(
-    request=request,
-    name="index.html",
-    context={"vendoriq_phone": settings.VENDORIQ_PHONE}
-)
+        request=request,
+        name="index.html",
+        context={"vendoriq_phone": settings.VENDORIQ_PHONE}
+    )
 
 
 @app.post("/register")
@@ -36,11 +46,10 @@ async def register(request: Request):
     data = await request.json()
     phone = data.get("phone", "").replace("+", "").replace(" ", "").replace("-", "")
 
-    # Normalize Nigerian numbers to international format
     if phone.startswith("0"):
         phone = "234" + phone[1:]
     elif phone.startswith("234"):
-        pass  # already correct
+        pass
     else:
         phone = "234" + phone
     name = data.get("name", "").strip()
@@ -66,14 +75,19 @@ async def register(request: Request):
 async def webhook(request: Request):
     try:
         raw = await request.json()
-        payload = EvolutionWebhookPayload(**raw)
+        payload = GreenAPIWebhookPayload(**raw)
 
         if payload.is_from_me or payload.is_group:
+            logger.info(f"Ignored message (from_me={payload.is_from_me}, group={payload.is_group})")
             return {"status": "ignored"}
-        if payload.event != "messages.upsert":
+        if payload.typeWebhook not in ("incomingMessageReceived",):
+            logger.info(f"Ignored webhook type: {payload.typeWebhook}")
             return {"status": "ignored"}
         if not payload.message_text:
+            logger.info("Ignored empty message")
             return {"status": "no_text"}
+
+        logger.info(f"Processing message from {payload.sender_phone}")
 
         await route_message(
             phone=payload.sender_phone,
@@ -82,14 +96,17 @@ async def webhook(request: Request):
         )
 
     except Exception as e:
-        print(f"Webhook error: {e}")
+        logger.error(f"Webhook error: {e}", exc_info=True)
 
     return {"status": "ok"}
 
 
 @app.get("/health")
-async def health():
-    return {"status": "ok", "service": "VendorIQ"}
+async def health(request: Request):
+    return {
+        "status": "ok",
+        "service": "VendorIQ"
+    }
 
 
 if __name__ == "__main__":

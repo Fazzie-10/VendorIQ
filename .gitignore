@@ -20,6 +20,10 @@ cloudflared.exe
 cloudflared
 *.log
 
+# Assets
+qr.png
+*.png
+
 # OS
 .DS_Store
 Thumbs.db
@@ -38,3 +42,4 @@ htmlcov/
 
 # Supabase local
 supabase/.temp/
+/MDs

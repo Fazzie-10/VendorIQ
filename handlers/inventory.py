@@ -1,6 +1,6 @@
 from datetime import datetime, UTC
 from services.db import get_supabase
-from services.evolution import send_message
+from services.whatsapp import send_message
 from services.gemini import generate_response
 
 
@@ -31,9 +31,11 @@ async def handle_update(phone: str, user: dict, entities: dict) -> None:
             "unit": entities.get("unit", "units")
         }).execute()
 
-    reply = await generate_response("inventory_updated", {
-        "item": item,
-        "added": quantity,
-        "total": new_qty
-    })
+    reply = await generate_response(
+        "inventory_updated", {
+            "item": item,
+            "added": quantity,
+            "total": new_qty
+        }
+    )
     await send_message(phone, reply)

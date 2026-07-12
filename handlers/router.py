@@ -1,6 +1,6 @@
 from services.gemini import parse_intent
 from services.db import get_supabase
-from services.evolution import send_message
+from services.whatsapp import send_message
 from handlers import onboarding, sales, query, customer, inventory, summary
 
 

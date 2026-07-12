@@ -2,34 +2,35 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class EvolutionWebhookPayload(BaseModel):
-    event: str
-    instance: str
-    data: dict
+class GreenAPIWebhookPayload(BaseModel):
+    typeWebhook: str
+    instanceData: dict
+    timestamp: int
+    idMessage: str
+    senderData: dict
+    messageData: dict
 
     @property
     def sender_phone(self) -> str:
-        jid = self.data.get("key", {}).get("remoteJid", "")
-        return jid.replace("@s.whatsapp.net", "").replace("@g.us", "")
+        chat_id = self.senderData.get("chatId", "")
+        return chat_id.replace("@c.us", "").replace("@g.us", "")
 
     @property
     def message_text(self) -> str:
-        msg = self.data.get("message", {})
-        return (
-            msg.get("conversation")
-            or msg.get("extendedTextMessage", {}).get("text")
-            or ""
-        ).strip()
+        msg_type = self.messageData.get("typeMessage", "")
+        if msg_type == "textMessage":
+            return (self.messageData.get("textMessageData", {}) or {}).get("textMessage", "")
+        return ""
 
     @property
     def push_name(self) -> str:
-        return self.data.get("pushName", "")
+        return self.senderData.get("senderName", "")
 
     @property
     def is_from_me(self) -> bool:
-        return self.data.get("key", {}).get("fromMe", False)
+        return self.typeWebhook == "outgoingMessageReceived"
 
     @property
     def is_group(self) -> bool:
-        jid = self.data.get("key", {}).get("remoteJid", "")
-        return "@g.us" in jid
+        chat_id = self.senderData.get("chatId", "")
+        return "@g.us" in chat_id
