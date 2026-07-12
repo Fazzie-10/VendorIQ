@@ -28,7 +28,7 @@ async def send_file_url(phone: str, file_bytes: bytes, filename: str, caption: s
     try:
         supabase.storage.from_("receipts").upload(
             file_path,
-            file_bytes,
+            bytes(file_bytes),
             {"content-type": "application/pdf", "upsert": True}
         )
     except Exception as e:
