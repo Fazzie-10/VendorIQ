@@ -38,6 +38,11 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.info(f"Deleted column migration: {e}")
 
+    try:
+        supabase.table("transactions").select("customer_name").limit(1).execute()
+    except Exception:
+        logger.warning("customer_name column missing — run migration: ALTER TABLE transactions ADD COLUMN customer_name TEXT; ALTER TABLE customers ADD COLUMN total_purchases NUMERIC DEFAULT 0;")
+
     start_scheduler()
     logger.info(f"Scheduler started (daily summary at {settings.DAILY_SUMMARY_HOUR}:{settings.DAILY_SUMMARY_MINUTE:02d})")
     yield

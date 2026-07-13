@@ -5,6 +5,24 @@ from services.whatsapp import send_message
 from services.gemini import generate_response
 
 
+def upsert_customer_purchase(supabase, user_id: str, name: str, amount: int, now) -> None:
+    existing = supabase.table("customers").select("*").eq("user_id", user_id).ilike("name", name).execute()
+    if existing.data:
+        customer = existing.data[0]
+        new_total = (customer.get("total_purchases") or 0) + amount
+        supabase.table("customers").update({
+            "total_purchases": new_total,
+            "updated_at": now.isoformat()
+        }).eq("id", customer["id"]).execute()
+    else:
+        supabase.table("customers").insert({
+            "user_id": user_id,
+            "name": name,
+            "total_purchases": amount,
+            "updated_at": now.isoformat()
+        }).execute()
+
+
 async def handle_add_debt(phone: str, user: dict, entities: dict) -> None:
     supabase = get_supabase()
     customer_name = entities.get("customer_name")

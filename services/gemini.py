@@ -17,7 +17,7 @@ LANGUAGE RULE: Detect what language the user wrote in. Classify as one of:
 Include this as the "language" field in your JSON output.
 
 Classify the user's message into one of these intents:
-- log_sale: They sold something (e.g. "sold 3 bags of rice at 52k", "I sell phone case 5k")
+- log_sale: They sold something (e.g. "sold 3 bags of rice at 52k", "I sell phone case 5k", "sold 2 bags rice at 52k to Emeka")
 - log_expense: They spent money (e.g. "bought goods for 30k", "transport 2k")
 - add_debt: A customer owes them (e.g. "Emeka owes 45k", "Tunde collect 3 bags credit")
 - record_payment: Customer paid (e.g. "Emeka paid 20k", "Tunde settle 10k")
@@ -30,6 +30,8 @@ Classify the user's message into one of these intents:
 - greeting: Starting a conversation or checking in (e.g. "good morning", "hello", "how far", "how you dey", "you there?")
 - acknowledgment: Saying thanks or acknowledging (e.g. "thank you", "thanks", "I appreciate", "ok", "alright", "got it")
 - status_response: Replying to a greeting about their well-being (e.g. "going well", "fine", "good", "great", "I'm fine", "doing well")
+- confirm: Agreeing to save (e.g. "yes", "save", "ok", "confirm", "sure", "go ahead", "✅", "yeah", "do it")
+- reject: Declining to save (e.g. "no", "cancel", "delete", "forget", "don't save", "na", "nope", "wrong")
 - help: Asking about capabilities (e.g. "what can you do", "what do you do", "help", "how does this work", "what do you support", "show me what you can do", "features")
 - unknown: Cannot classify
 
@@ -43,15 +45,31 @@ AMOUNT CALCULATION RULES (CRITICAL):
 - Always use the "at" word as a trigger for unit price x quantity multiplication.
 - Always use "for" word as a trigger for total price (already the final amount).
 
+MULTI-ITEM RULES:
+- Detect multiple items separated by "and", "&", commas, or newlines.
+- Return them as an "items" array. No limit on count.
+- Example: "sold 3 bags rice at 52k and 2 cartons indomie at 35k"
+  → items: [{"item":"bags of rice","amount":156000,"quantity":3}, {"item":"cartons indomie","amount":70000,"quantity":2}]
+- Single item: keep the existing single format (item, amount, quantity fields).
+- Mixed intents not supported (e.g. sale + expense in one message).
+
+TEXT EXTRACTION RULE:
+- Extract item names, customer names, and notes in English.
+- If user writes in Yoruba, Igbo, Hausa, or Pidgin, translate fields to English.
+- Example: "ta 3 apoti iresi ni 52k fun Emeka" → item="bags of rice", customer_name="Emeka", amount=156000
+
 NOTE EXTRACTION:
-If the message includes extra context like "for wedding", "for restocking", "from customer X", extract it as "note".
+If the message includes extra context like "for wedding", "for restocking", extract it as "note".
 Example: "Sold 3 bags at 52k for Chisom's wedding" → note = "Chisom's wedding".
 Example: "Bought goods for 30k for restocking" → note = "restocking".
 If no extra context, set note = null.
 
 CUSTOMER NAME EXTRACTION:
-For add_debt: "Emeka owes 45k" → customer_name = "Emeka".
-For record_payment: "Emeka paid 20k" → customer_name = "Emeka".
+For log_sale: "sold 2 bags rice at 52k to Emeka" → customer_name = "Emeka"
+             "sold Emeka 2 bags rice at 52k" → customer_name = "Emeka"
+             "sell rice to Chisom" → customer_name = "Chisom"
+For add_debt: "Emeka owes 45k" → customer_name = "Emeka"
+For record_payment: "Emeka paid 20k" → customer_name = "Emeka"
 For debt queries: "who owes me" → customer_name = null (list all). "Emeka balance" → customer_name = "Emeka".
 
 DELETE RECORD RULES:
@@ -62,6 +80,7 @@ DELETE RECORD RULES:
 - "cancel that" → target_type = null, period = "last"
 
 Return ONLY valid JSON, no markdown, no explanation:
+Single item:
 {
   "intent": "log_sale",
   "language": "english",
@@ -70,6 +89,23 @@ Return ONLY valid JSON, no markdown, no explanation:
     "item": "bags of rice",
     "quantity": 3,
     "customer_name": null,
+    "period": null,
+    "note": null,
+    "target_type": null
+  },
+  "confidence": 0.95
+}
+
+Multiple items:
+{
+  "intent": "log_sale",
+  "language": "english",
+  "entities": {
+    "items": [
+      {"item": "bags of rice", "amount": 156000, "quantity": 3},
+      {"item": "cartons indomie", "amount": 70000, "quantity": 2}
+    ],
+    "customer_name": "Emeka",
     "period": null,
     "note": null,
     "target_type": null
@@ -136,7 +172,10 @@ DATA-ACCURACY RULES (NON-NEGOTIABLE):
 - Report what the data says. No creative interpretation of zeros or empty lists.
 
 CONTEXT-SPECIFIC RULES:
-- sale_logged: State item, total amount (not unit price), and today's running total.
+- sale_logged: State item(s), total amount (not unit price), and today's running total.
+  If "items" array is present: list each item briefly. If "customer_name" is present: mention sold to them.
+  If single item: "Logged: 3 bags rice at N156,000. Today's total: N450,000 👍"
+  If multi-item: "Logged: 3 bags rice at N156,000, 2 cartons indomie at N70,000. Today's total: N450,000 👍"
 - expense_logged: Confirm item and amount deducted.
 - revenue_query: State the period, total sales, expenses, profit. If zero, say zero.
 - debt_added: State customer name, amount added, their total outstanding balance.
@@ -220,13 +259,16 @@ AVAILABLE DATA:
    - item: string (what was sold/bought)
    - quantity: number or null
    - note: string or null
+   - customer_name: string or null (who the sale was to)
    - created_at: ISO timestamp
    - deleted: boolean (true if user archived/deleted it)
    - deleted_at: ISO timestamp or null
 
-2. customers table — debtors
+2. customers table — people you do business with
    - name: string
    - balance: number (outstanding debt in naira)
+   - total_purchases: number (total cash sales to this customer, not debt)
+   - notes: string or null
    - updated_at: ISO timestamp
 
 3. inventory table — stock items
@@ -273,6 +315,11 @@ Aggregation options:
 For customer/debt questions:
 - "who owes me" → table: "customers", aggregation: "list"
 - "how much does Emeka owe" → table: "customers", customer_filter: "Emeka", aggregation: "total"
+
+For customer purchase history:
+- "how much has Emeka bought" → table: "transactions", type_filter: "sale", customer_filter: "Emeka", aggregation: "total"
+- "what has Emeka bought" → table: "transactions", type_filter: "sale", customer_filter: "Emeka", aggregation: "list"
+- "what did Emeka buy today" → table: "transactions", type_filter: "sale", customer_filter: "Emeka", start_date: "today", aggregation: "list"
 
 For inventory questions:
 - "what's in stock" → table: "inventory", aggregation: "list"
