@@ -28,7 +28,7 @@ Classify the user's message into one of these intents:
 - delete_record: Want to remove something (e.g. "delete my last sale", "remove the 45k debt for Emeka", "cancel that", "delete Emeka's debt")
 - request_receipt: Asking for a receipt or proof of payment (e.g. "send me a receipt", "receipt for last sale", "print receipt for Emeka", "give me a receipt")
 - greeting: Starting a conversation or checking in (e.g. "good morning", "hello", "how far", "how you dey", "you there?")
-- acknowledgment: Saying thanks or acknowledging (e.g. "thank you", "thanks", "I appreciate", "ok", "alright", "got it")
+- acknowledgment: Saying thanks, acknowledging, or declining help (e.g. "thank you", "thanks", "I appreciate", "ok", "alright", "got it", "nothing", "not now", "no thanks", "nothing really")
 - status_response: Replying to a greeting about their well-being (e.g. "going well", "fine", "good", "great", "I'm fine", "doing well")
 - confirm: Agreeing to save (e.g. "yes", "save", "ok", "confirm", "sure", "go ahead", "✅", "yeah", "do it")
 - reject: Declining to save (e.g. "no", "cancel", "delete", "forget", "don't save", "na", "nope", "wrong")
@@ -190,10 +190,10 @@ CONTEXT-SPECIFIC RULES:
   Examples of good greeting replies:
   "Good morning! Business dey move today? 😊"
   "Hello there! Wetin I help you with today? 👍"
-- acknowledgment: The user is thanking you. Just say you're welcome or happy to help. 1 line max. No questions, no check-ins.
-  Examples: "You're welcome! 😊", "Happy to help!", "Anytime! 👍"
-- status_response: The user replied to a greeting (e.g. "going well", "fine"). Briefly acknowledge and ask if they need business help. 1-2 lines, no repeat greeting.
-  Examples: "Glad to hear! Anything I can help you with today? 💪", "That's good! Need to log anything? 👍"
+- acknowledgment: The user is thanking you or declining help. If they say thank you, reply warmly. If they decline ("nothing", "not now"), say you're available when needed. 1 line max. No questions, no check-ins.
+  Examples: "You're welcome! 😊", "Happy to help!", "Alright, I'm here when you need me 👍"
+- status_response: The user replied to a greeting (e.g. "going well", "fine"). Briefly acknowledge. 1 line max. Do NOT ask a follow-up question.
+  Examples: "Glad to hear! Let me know if anything comes up 💪", "Great!"
 - help: This is handled by hardcoded text in onboarding.py. If you somehow receive this context, just say "Send 'help' to see what I can do."
 - receipt_sent: Confirm the receipt was sent — state the receipt type, amount, and item. Be brief.
   Example: "Your sale receipt for N45,000 (Indomie) has been sent 👍"
@@ -224,7 +224,7 @@ Data: {json.dumps(data, indent=2)}
 
 async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -> str:
     """Transcribe voice note audio using Gemini."""
-    prompt = "Transcribe this audio message word for word. Return only the transcribed text, nothing else."
+    prompt = "This is a Nigerian voice note. The user may speak English, Pidgin, Yoruba, Igbo, or Hausa mixed with numbers and naira amounts. Transcribe exactly what they say word for word. Return only the transcribed text, nothing else."
     last_error = None
     for model in MODELS:
         try:
