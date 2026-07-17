@@ -61,3 +61,56 @@ def generate_receipt(
     pdf.cell(0, 6, "Thank you for using VendorIQ!", align="C")
 
     return pdf.output()
+
+
+def generate_combined_receipt(
+    business_name: str,
+    receipt_type: str,
+    items: list,
+    total: int,
+    customer: str | None = None,
+    receipt_number: str | None = None,
+) -> bytes:
+    pdf = ReceiptPDF()
+    pdf.add_page()
+
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, business_name, align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(4)
+
+    labels = [
+        ("Receipt #", receipt_number or f"VIQ-{now_nigeria().strftime('%y%m%d%H%M%S')}"),
+        ("Type", receipt_type.title()),
+    ]
+    if customer:
+        labels.append(("Customer", customer))
+
+    for label, value in labels:
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.cell(40, 7, label, new_x="END")
+        pdf.set_font("Helvetica", "", 10)
+        pdf.cell(0, 7, value, new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.cell(0, 7, "Items:", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
+
+    for i, entry in enumerate(items, 1):
+        line = f"  {i}. {entry.get('item', 'Goods')}"
+        qty = entry.get("quantity")
+        if qty:
+            line += f" x{qty}"
+        line += f" — N{entry['amount']:,}"
+        pdf.set_font("Helvetica", "", 10)
+        pdf.cell(0, 7, line, new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(0, 7, f"Total: N{total:,}", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(8)
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.cell(0, 6, "Thank you for using VendorIQ!", align="C")
+
+    return pdf.output()

@@ -1,6 +1,7 @@
 from services.db import get_supabase
 from services.whatsapp import send_message
 from services.gemini import generate_response, generate_query_action, format_query_results
+from services.pending import store_last_query, get_last_query
 import hashlib
 import time
 
@@ -41,12 +42,23 @@ async def handle_smart_query(phone: str, user: dict, entities: dict) -> None:
     user_id = user["id"]
     original_text = entities.get("_original_text", "")
 
+    followup_phrases = {"more details", "tell me more", "expand on that", "details", "expand", "more"}
+    is_followup = original_text.strip().lower() in followup_phrases
+
     cached = _get_cached(user_id, original_text)
     if cached:
         await send_message(phone, cached)
         return
 
-    action = await generate_query_action(original_text, user.get("business_name", ""))
+    if is_followup:
+        last_query = get_last_query(phone)
+        if last_query:
+            action = last_query
+            action["aggregation"] = "list"
+        else:
+            action = await generate_query_action(original_text, user.get("business_name", ""))
+    else:
+        action = await generate_query_action(original_text, user.get("business_name", ""))
 
     table = action.get("table")
     if not table or action.get("error"):
@@ -119,6 +131,9 @@ async def handle_smart_query(phone: str, user: dict, entities: dict) -> None:
     except Exception as e:
         await send_message(phone, "Sorry, I ran into an error looking up that data. Try asking differently.")
         return
+
+    if not is_followup and not action.get("error"):
+        store_last_query(phone, action)
 
     reply = await format_query_results(original_text, data, language=lang)
     _set_cache(user_id, original_text, reply)

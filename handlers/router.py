@@ -2,9 +2,9 @@ from services.gemini import parse_intent
 from services.db import get_supabase
 from services.whatsapp import send_message
 from services.pending import store_pending, get_pending, clear_pending
-from handlers import onboarding, sales, query, customer, inventory, summary, delete, receipt
+from handlers import onboarding, sales, query, customer, inventory, summary, delete, receipt, edit
 
-WRITE_INTENTS = {"log_sale", "log_expense", "add_debt", "record_payment", "update_inventory", "delete_record"}
+WRITE_INTENTS = {"log_sale", "log_expense", "add_debt", "record_payment", "update_inventory", "delete_record", "edit_record"}
 
 HANDLERS = {
     "log_sale": sales.handle_log_sale,
@@ -16,6 +16,7 @@ HANDLERS = {
     "update_inventory": inventory.handle_update,
     "get_summary": summary.handle_summary,
     "delete_record": delete.handle_delete,
+    "edit_record": edit.handle_edit,
     "request_receipt": receipt.handle_receipt_request,
     "greeting": onboarding.handle_greeting,
     "acknowledgment": onboarding.handle_acknowledgment,
@@ -53,6 +54,10 @@ def _build_preview(intent: str, entities: dict) -> str:
         return f"Stock update: {entities.get('quantity')} {entities.get('item', 'goods')}"
     elif intent == "delete_record":
         return "Delete record"
+    elif intent == "edit_record":
+        old = entities.get("old_item") or f"N{entities.get('old_amount'):,}" if entities.get("old_amount") else ""
+        new = entities.get("new_item") or f"N{entities.get('new_amount'):,}" if entities.get("new_amount") else ""
+        return f"Edit: {old} → {new}"
     return "Save this?"
 
 

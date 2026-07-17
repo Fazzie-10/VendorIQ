@@ -21,7 +21,7 @@ Classify the user's message into one of these intents:
 - log_expense: They spent money (e.g. "bought goods for 30k", "transport 2k")
 - add_debt: A customer owes them (e.g. "Emeka owes 45k", "Tunde collect 3 bags credit")
 - record_payment: Customer paid (e.g. "Emeka paid 20k", "Tunde settle 10k")
-- query_revenue: Asking about their money (e.g. "how much today", "weekly report", "wetin I make")
+- query_revenue: Asking about their money or following up on a previous answer (e.g. "how much today", "weekly report", "wetin I make", "more details", "tell me more", "expand on that", "details", "expand")
 - query_debt: Asking about who owes them (e.g. "who owes me", "Emeka balance")
 - update_inventory: Stock update (e.g. "received 50 bags", "stock: 20 cartons indomie")
 - get_summary: Want full report (e.g. "summary", "report", "show me everything")
@@ -33,6 +33,7 @@ Classify the user's message into one of these intents:
 - confirm: Agreeing to save (e.g. "yes", "save", "ok", "confirm", "sure", "go ahead", "✅", "yeah", "do it")
 - reject: Declining to save (e.g. "no", "cancel", "delete", "forget", "don't save", "na", "nope", "wrong")
 - help: Asking about capabilities (e.g. "what can you do", "what do you do", "help", "how does this work", "what do you support", "show me what you can do", "features")
+- edit_record: Changing or correcting a previous record (e.g. "change bo ti so to potato", "bo ti so is actually potato", "correct last sale item to potato", "update that to rice", "fix item name from bo ti so to potato")
 - unknown: Cannot classify
 
 AMOUNT CALCULATION RULES (CRITICAL):
@@ -79,6 +80,15 @@ DELETE RECORD RULES:
 - "delete Emeka's debt" → target_type = "debt", customer_name = "Emeka", period = "all"
 - "cancel that" → target_type = null, period = "last"
 
+EDIT RECORD RULES:
+- "change bo ti so to potato" → old_item = "bo ti so", new_item = "potato", field = "item"
+- "bo ti so is actually potato" → old_item = "bo ti so", new_item = "potato", field = "item"
+- "correct last sale item to potato" → old_item = null, new_item = "potato", field = "item", target_type = "sale", period = "last"
+- "update that to rice" → old_item = null, new_item = "rice", field = "item", period = "last"
+- "fix item name from bo ti so to potato" → old_item = "bo ti so", new_item = "potato", field = "item"
+- "change the 45k debt to 50k" → old_amount = 45000, new_amount = 50000, field = "amount", target_type = "debt"
+- For field: "item" (item name correction), "amount" (price correction), "quantity" (quantity correction)
+
 Return ONLY valid JSON, no markdown, no explanation:
 Single item:
 {
@@ -113,9 +123,25 @@ Multiple items:
   "confidence": 0.95
 }
 
+Edit record:
+{
+  "intent": "edit_record",
+  "language": "english",
+  "entities": {
+    "old_item": "bo ti so",
+    "new_item": "potato",
+    "field": "item",
+    "target_type": null,
+    "period": null,
+    "old_amount": null,
+    "new_amount": null
+  },
+  "confidence": 0.95
+}
+
 For amounts: convert "52k" to 52000, "1.5m" to 1500000, "N45,000" to 45000.
 For period: "today", "this week", "this month", "yesterday", "last", or null.
-For target_type (only for delete_record): "sale", "expense", "debt", or null.
+For target_type (only for delete_record and edit_record): "sale", "expense", "debt", or null.
 """
 
 
@@ -180,6 +206,8 @@ CONTEXT-SPECIFIC RULES:
 - revenue_query: State the period, total sales, expenses, profit. If zero, say zero.
 - debt_added: State customer name, amount added, their total outstanding balance.
 - payment_recorded: State customer name, amount paid, remaining balance. If zero, say fully settled.
+- record_edited: Confirm what was changed (old value → new value). Be brief.
+  Example: "Updated: 'bo ti so' → 'potato' ✅", "Changed amount from N45,000 to N50,000 👍"
 - single_debt_query: State customer name, exact balance, how long they have owed.
 - all_debts_query: For each debtor, state their name, balance, and how long they have owed. End with total outstanding.
 - daily_summary: State today's sales total, expenses, profit, then list debtors with amounts, then low stock if any. All from the data — no improvisation.
