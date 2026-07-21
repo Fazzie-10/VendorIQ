@@ -1,0 +1,6 @@
+{
+  "name": "VendorIQ",
+  "description": "WhatsApp-native business intelligence bot for Nigerian SMB owners. Record sales, track debts, log expenses, and receive automatic daily reports directly on WhatsApp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

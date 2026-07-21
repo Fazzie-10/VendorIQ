@@ -12,6 +12,7 @@ __pycache__/
 *.pdb
 *.egg-info/
 dist/
+!landing-page/dist/
 build/
 .eggs/
 

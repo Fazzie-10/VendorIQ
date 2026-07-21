@@ -51,11 +51,19 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="VendorIQ", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/site", StaticFiles(directory="landing-page/dist"), name="landing")
 templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/", response_class=HTMLResponse)
 async def landing_page(request: Request):
+    import pathlib
+    index_path = pathlib.Path("landing-page/dist/index.html")
+    if index_path.exists():
+        html = index_path.read_text(encoding="utf-8")
+        phone = settings.VENDORIQ_PHONE
+        html = html.replace("</head>", f'<script>window.__VENDORIQ_PHONE__="{phone}";</script></head>')
+        return HTMLResponse(html)
     return templates.TemplateResponse(
         request=request,
         name="index.html",

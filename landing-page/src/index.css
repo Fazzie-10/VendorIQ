@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg: #050505;
+  --surface: #0a0a0b;
+  --surface-2: #121214;
+  --card: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --green: #34d399; /* emerald-400 equivalent for sophisticated dark feel */
+  --green-dark: #10b981; /* emerald-500 */
+  --green-glow: rgba(52, 211, 153, 0.08);
+  --green-glow-strong: rgba(52, 211, 153, 0.15);
+  --green-dim: rgba(52, 211, 153, 0.10);
+  --green-border: rgba(52, 211, 153, 0.20);
+  --text: #f3f4f6; /* gray-100 */
+  --text-muted: #9ca3af; /* gray-400 */
+  --text-dim: #4b5563; /* gray-600 */
+  --red-dim: rgba(239, 68, 68, 0.08);
+  --red-border: rgba(239, 68, 68, 0.18);
+  --nav-bg: rgba(0, 0, 0, 0.4);
+}
+
+.light {
+  --bg: #fbfbfb;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --card: rgba(0, 0, 0, 0.02);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.12);
+  --green: #059669; /* emerald-600 */
+  --green-dark: #047857; /* emerald-700 */
+  --green-glow: rgba(5, 150, 105, 0.05);
+  --green-glow-strong: rgba(5, 150, 105, 0.10);
+  --green-dim: rgba(5, 150, 105, 0.08);
+  --green-border: rgba(5, 150, 105, 0.15);
+  --text: #18181b; /* zinc-900 */
+  --text-muted: #52525b; /* zinc-600 */
+  --text-dim: #9ca3af; /* gray-400 */
+  --red-dim: rgba(220, 38, 38, 0.05);
+  --red-border: rgba(220, 38, 38, 0.15);
+  --nav-bg: rgba(255, 255, 255, 0.8);
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", var(--font-sans);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Animation Keyframes */
+@keyframes morphBlob {
+  0%, 100% {
+    border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%;
+    transform: rotate(0deg) scale(1);
+  }
+  33% {
+    border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%;
+    transform: rotate(120deg) scale(1.05);
+  }
+  66% {
+    border-radius: 70% 30% 50% 50% / 30% 70% 50% 50%;
+    transform: rotate(240deg) scale(0.95);
+  }
+}
+
+@keyframes floatPhone {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes msgAppear {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.animate-morph {
+  animation: morphBlob 10s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: floatPhone 5s ease-in-out infinite;
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+.pulse-dot {
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+.msg-appear {
+  animation: msgAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
